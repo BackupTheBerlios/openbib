@@ -1,0 +1,5 @@
+log4perl.category = INFO, File
+log4perl.appender.File          = Log::Dispatch::File
+log4perl.appender.File.filename = /var/log/olws/ws.log
+log4perl.appender.File.layout   = PatternLayout
+log4perl.appender.File.layout.ConversionPattern =  %d %p> %F{1}:%L %M - %m%n
