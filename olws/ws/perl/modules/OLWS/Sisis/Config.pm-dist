@@ -40,6 +40,7 @@ use vars qw(%config);
 
 	   dbhost    => 'localhost',
 	   dbport    => '1500',
+	   dbserver  => 'sisisSYB',
 	   dbuser    => 'root',
 	   dbpasswd  => 'StrengGeheim',
 
