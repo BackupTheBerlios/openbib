@@ -28,6 +28,9 @@
 #####################################################################   
 
 use SOAP::Transport::HTTP;
+use Log::Log4perl;
+
+Log::Log4perl->init_once($OLWS::Config::config{log4perl_path});
 
 SOAP::Transport::HTTP::CGI
   -> dispatch_with({
