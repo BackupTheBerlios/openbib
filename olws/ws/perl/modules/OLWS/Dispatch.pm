@@ -30,6 +30,8 @@ package OLWS::Dispatch;
 use strict;
 use warnings;
 
+use Log::Log4perl qw(get_logger :levels);
+
 use OLWS::Sisis::Config;
 
 # Importieren der Konfigurationsdaten als Globale Variablen
@@ -51,6 +53,14 @@ my $server = SOAP::Transport::HTTP::Apache
                    });
 
 sub handler { 
+   my $r=$_[0];
+   
+   # Log4perl logger erzeugen
+
+   my $logger = get_logger();
+
+   $logger->info("Request from: ".$r->get_remote_host);
+
    $server->handler(@_); 
 }
 
