@@ -33,6 +33,7 @@ SOAP::Transport::HTTP::CGI
   -> dispatch_with({
                      'urn:/Authentication' => 'OLWS::Sisis::Authentication',
                      'urn:/Circulation'    => 'OLWS::Sisis::Circulation',
+                     'urn:/Media'          => 'OLWS::Sisis::Media',
                      'urn:/MediaStatus'    => 'OLWS::Sisis::MediaStatus',
                    })
   -> handle;
