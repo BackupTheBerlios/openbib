@@ -44,6 +44,21 @@ use vars qw(%config);
 sub authenticate_user {
   
   my ($class, $username, $password, $database) = @_;
+
+  my %monthtab=(
+             Jan => '01',
+             Feb => '02',
+             Mar => '03',
+             Apr => '04',
+             May => '05',
+             Jun => '06',
+             Jul => '07',
+             Aug => '08',
+             Sep => '09',
+             Oct => '10',
+             Nov => '11',
+             Dec => '12',
+            );
   
   #####################################################################
   # Verbindung zur SQL-Datenbank herstellen
@@ -78,20 +93,43 @@ sub authenticate_user {
   my $strasse=$res->{'d02s1'};
   my $plz=$res->{'d02p1'};
 
-  my $sperre=$res->{'d02sp1'};
-
   # Gebuehrendaten
   my $soll=$res->{'d02so1'};
   my $guthaben=$res->{'d02gut'};
 
   # Ausleihdaten
   my $avanz=$res->{'d02avanz'};           # Anzahl ausgeliehender Medien
-  my $bsanz=$res->{'d02bsanz'};           # Anzahl ausgeliehender Medien
+  my $branz=$res->{'d02branz'};           # Anzahl rueckgeforderter Medien
   my $bestellanz=$res->{'d02bestellanz'}; # Anzahl bestellter Medien
   my $pflanz=$res->{'d02pflanz'};         # Anzahl fernleihbestellter Medien
   my $vmanz=$res->{'d02vmanz'};           # Anzahl vorgemerkter Medien
   my $maanz=$res->{'d02maanz'};           # Anzahl gemahnter Medien
   my $vlanz=$res->{'d02vlanz'};           # Anzahl verlaengerter Medien
+  my $sperre=$res->{'d02sp1'};            # Sperre (inkl. Grund)
+  my $sperrdatum=$res->{'d02d1sperre'};        # Sperrdatum
+
+  my ($month,$day,$year)=$geburtsdatum=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
+  $day=~s/^(\d)$/0$1/;
+  $month=~s/^(\d)$/0$1/;
+  $geburtsdatum=$day.".".$monthtab{$month}.".".$year;
+
+  ($month,$day,$year)=$sperrdatum=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
+  $day=~s/^(\d)$/0$1/;
+  $month=~s/^(\d)$/0$1/;
+  $sperrdatum=$day.".".$monthtab{$month}.".".$year;
+
+
+  $result=$dbh->prepare("select * from $database.sisis.d02onl where d02obnr = ? and d02oart = 1");
+
+  $result->execute($username);
+
+  my @emailadr=();
+  while (my $res=$result->fetchrow_hashref()){
+    my $singleemail=$res->{'d02ozeile'};
+    push @emailadr, $singleemail;
+  }	
+  
+  my $email=join(" ; ",@emailadr);
 
   my $userinfo={
 		Vorname => $vorname,
@@ -102,18 +140,20 @@ sub authenticate_user {
 		Strasse => $strasse,
 		PLZ => $plz,
 
-		Sperre => $sperre,
-
 		Soll => $soll,
 		Guthaben => $guthaben,
 
 		Avanz => $avanz,
-		Bsanz => $bsanz,
+		Branz => $branz,
 		Bestellanz => $bestellanz,
 		Pflanz => $pflanz,
 		Vmanz => $vmanz,
 		Maanz => $maanz,
-		Vlanz => $vlanz,		
+		Vlanz => $vlanz,
+
+                Sperre => $sperre,		
+                Sperrdatum => $sperrdatum,
+                Email => $email,		
 	       };
 
   $result->finish;
