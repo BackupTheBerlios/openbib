@@ -32,7 +32,7 @@ use SOAP::Transport::HTTP;
 SOAP::Transport::HTTP::CGI
   -> dispatch_with({
                      'urn:/Authentication' => 'OLWS::Sisis::Authentication',
-                     'urn:/Circulation'    => 'OLWS::Sisis::Circulation'
+                     'urn:/Circulation'    => 'OLWS::Sisis::Circulation',
                      'urn:/MediaStatus'    => 'OLWS::Sisis::MediaStatus',
                    })
   -> handle;
