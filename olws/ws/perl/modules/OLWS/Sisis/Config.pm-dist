@@ -37,12 +37,16 @@ use vars qw(%config);
 	   dbimodule => 'Sybase',
 
 	   # Einstellungen fuer den Zugriff auf die Katalog-Datenbanken
-
+	   
 	   dbhost    => 'localhost',
 	   dbport    => '1500',
-	   dbserver  => 'sisisSYB',
 	   dbuser    => 'root',
 	   dbpasswd  => 'StrengGeheim',
+	   dbserver  => 'sisisSYB',
+
+	   localdbs  => {
+                         'sisis' => 'active',
+                        },
 
 );
 
