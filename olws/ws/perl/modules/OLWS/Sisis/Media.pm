@@ -30,6 +30,8 @@ package OLWS::Sisis::Media;
 use strict;
 use warnings;
 
+use Log::Log4perl qw(get_logger :levels);
+
 use DBI;
 
 use OLWS::Sisis::Config;
@@ -45,11 +47,15 @@ use vars qw(%config);
 sub get_native_title_by_katkey {
   
   my ($class, $database, $katkey) = @_;
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
   
   #####################################################################
   # Verbindung zur SQL-Datenbank herstellen
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd});
+  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
   
   my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
   my $titelref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$katkey);	

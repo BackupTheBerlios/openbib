@@ -30,6 +30,8 @@ package OLWS::Sisis::Data;
 use strict;
 use warnings;
 
+use Log::Log4perl qw(get_logger :levels);
+
 use DBI;
 
 use OLWS::Sisis::Config;
@@ -43,9 +45,13 @@ use vars qw(%config);
 
 sub get_titdupref_by_katkey {
   my ($dbh,$database,$katkey)=@_;
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
   
   my $result=$dbh->prepare("select autor_avs,titel_avs,erschjahr from $database.sisis.titel_dupdaten where katkey = ?");
-  $result->execute($katkey);
+  $result->execute($katkey) or $logger->error_die($DBI::errstr);
   
   my $singletitle=undef;
   
@@ -64,15 +70,46 @@ sub get_titdupref_by_katkey {
   return $singletitle;
 }
 
+sub get_titzfl_by_katkey {
+  my ($dbh,$database,$katkey)=@_;
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
+  
+  my $result=$dbh->prepare("select d10verfasser,d10titel,d10jahr from $database.sisis.d10kat where d10katkey = ?");
+  $result->execute($katkey) or $logger->error_die($DBI::errstr);
+  
+  my $singletitle=undef;
+  
+  while (my $res=$result->fetchrow_hashref()){
+    my $verfasser=$res->{d10verfasser};
+    my $titel=$res->{d10titel};
+    my $ejahr=$res->{d10jahr};
+    
+    $singletitle={
+		  '0100.001'      => $verfasser,
+		  '0331.001'      => $titel,
+		  '0425.001'      => $ejahr,
+		 };
+  }
+  
+  return $singletitle;
+}
+
 sub get_titref_by_katkey {
   my ($sikfstabref,$dbh,$database,$katkey)=@_;
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
   
   my %sikfstab=%$sikfstabref;
   
   my %titel=();
   
   my $request=$dbh->prepare("select nettodaten from $database.sisis.titel_daten where katkey = ?");
-  $request->execute($katkey);
+  $request->execute($katkey) or $logger->error_die($DBI::errstr);
   
   my $result=$request->fetchrow_hashref();
   
@@ -142,9 +179,13 @@ sub get_titref_by_katkey {
 
 sub get_sikfstabref {
   my ($dbh,$database)=@_;
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
   
   my $request=$dbh->prepare("select fnr, kateg, fldtyp, refnr from $database.sisis.sik_fstab where setnr=1");
-  $request->execute();
+  $request->execute() or $logger->error_die($DBI::errstr);
   
   my %sikfstab=();
   
@@ -163,6 +204,10 @@ sub get_sikfstabref {
 
 sub get_normdata_ans {
   my ($dbh,$sikfstabref,$database,$verwkey,$fnr,$inh)=@_;
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
   
   my %sikfstab=%$sikfstabref;
   
@@ -173,7 +218,7 @@ sub get_normdata_ans {
   my $tabelle=$normtabs[$sikfstab{refnr}[$fnr]-1];
   
   my $request=$dbh->prepare("select nettodaten from $database.sisis.$tabelle where katkey = ?");
-  $request->execute($verwkey);
+  $request->execute($verwkey) or $logger->error_die($DBI::errstr);
   
   my $result=$request->fetchrow_hashref();
   
