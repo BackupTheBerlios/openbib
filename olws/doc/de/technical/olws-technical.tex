@@ -1,0 +1,324 @@
+%\documentclass[11pt]{scrartcl}
+\documentclass[11pt, twoside, a4paper, BCOR8mm, DIV12, bibtotoc,idxtotoc]{scrbook}
+\usepackage{german}
+\usepackage{typearea}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage[latin1]{inputenc}
+
+% Zusaetzliche Picture-Umgebungen (z.B. shadowenv)
+\usepackage{picins}
+
+% Header anpassbar
+\usepackage{fancyhdr}
+
+% Headings umdefinieren
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[RO]{\nouppercase{\rightmark}}
+\fancyhead[LE]{\nouppercase{\leftmark}}
+\fancyfoot[RO, LE]{\thepage}
+
+%\addtolength{\headwidth}{\marginparsep}
+%\addtolength{\headwidth}{\marginparwidth}
+\addtolength{\headwidth}{1cm}
+
+\parindent0.0mm
+\parskip0.3cm    
+\typearea{13}
+
+\begin{document}
+
+\frontmatter
+
+\begin{titlepage}
+
+\begin{center}
+\rule[-.1in]{16cm}{1mm}\\[3mm]
+{\fontfamily{cmss}\fontseries{bx}\fontshape{n}\fontsize{20}{20pt}\selectfont
+  www.openbib.org $\bullet$ Open Library WebServices}\\[-2mm]
+\rule[-.1in]{16cm}{1mm}
+
+\vspace{5cm}
+
+  \textbf{\fontfamily{cmss}\fontseries{bx}\fontshape{n}\fontsize{30}{30pt}\selectfont Open Library WebServices\\[3mm] Technische Dokumentation}
+
+  \vspace{2cm}
+
+  Oliver Flimm \texttt{<flimm@openbib.de>}\\
+  Stand: \today
+
+  \vspace{8cm}
+
+\rule[-.1in]{16cm}{1mm}\\[3mm]
+{\fontfamily{cmss}\fontseries{bx}\fontshape{n}\fontsize{20}{20pt}\selectfont
+  www.openbib.org $\bullet$ Open Library WebServices}\\[-2mm]
+\rule[-.1in]{16cm}{1mm}
+
+\end{center}
+
+\end{titlepage}
+
+%\thispagestyle{empty}
+
+%\begin{verbatim}
+
+
+%Copyright (c) 2005 Oliver Flimm <flimm@openbib.org>
+
+%Es wird die Erlaubnis gegeben dieses Dokument zu kopieren, verteilen 
+%und/oder zu veraendern unter den Bedingungen der GNU Free
+%Documentation License, Version 1.1 oder einer spaeteren, von der Free 
+%Software Foundation veroeffentlichten Version; mit den
+%Unveraenderlichen Abschnitten DEREN TITEL AUFGEZAEHLT sind, mit den 
+%Vorderseitentexten die AUFGEZAEHLT sind, und mit den Rueckseitentexten
+%die AUFGEZAEHLT sind. Eine Kopie dieser Lizenz ist in dem Abschnitt 
+%enthalten, der mit "GNU Free Documentation License"
+%\end{verbatim}
+
+\tableofcontents
+
+\mainmatter
+
+\chapter{Hintergrund und Zielsetzung}
+
+Ein großes Problem in der derzeitigen Bibliothekslandschaft ist die
+Zersplitterung der angebotenen Dienste. Typischerweise bildet ein
+kommerzielles Bibliothekssystem mit Diensten wie Katalogisierung,
+Erwerbung, Ausleihe und Recherche über einen WebOPAC die Basis, an die
+andere, meist externe Dienste wie zusätzliche Datenbankrecherchen oder
+Ähnliches angebunden werden müssen. Ebenso besteht die Möglichkeit,
+dass die Dienste des eigentlichen Bibliothekssystems nicht vollständig
+integriert sind und auch hier eine gegenseitige Anbindung erst
+geschaffen werden muss.
+
+Als Auswege werden u.a. monolithische Portallösungen der jeweiligen
+Anbieter von Bibliothekssystemen gesehen, da diese naturgemäß die
+Anbindung des wichtigen Dienstes Ausleihe mitbringen. Die Anbindung
+dieses Dienstes kann aufgrund seiner generellen Wichtigkeit dann als
+wesentlicher angesehen werden, als die Qualität und die Fähigkeiten
+des jeweiligen Portals.
+
+Sinnvoller und mit deutlich mehr Freiheit bei der Auswahl des 'besten
+Systems für den jeweiligen Zweck' verbunden ist die Kopplung
+unterschiedlicher Systeme über geeignete Kommunikationsschnittstellen
+herzustellen.
+
+Ein international standardisiertes Verfahren, diese
+Kommunikationsschnittstelle zu verwirklichen sind WebServices auf der
+Basis von XML-RPC oder SOAP. Damit können verschiedene
+Programmiersprachen verwendet werden.
+
+Eine wesentliche Voraussetzung für die Integrationsfähigkeit ist die
+Offenheit der Schnittstelle. Nur damit ist die Anbindung beliebiger
+Systeme gewährleistet, während man bei der Verwendung proprietärer
+Protokolle den Interessen des jeweiligen Unternehmens ausgeliefert
+ist.
+
+Ein weiterer Vorteil einer offenen Schnittstelle ist die langfristige
+Nutzung von Anwendungen, die auf Grundlage dieser Schnittstelle
+programmiert wurden, auch bei möglichen Systemwechseln. Lediglich die
+Realisierung der Webservices für das jeweilige neue Bibliothekssystem
+ist dann zu ändern.
+
+Aus diesem 'Freiheitsgedanken' heraus und der entsprechenden konkreten
+Problemstellung im OpenBib Recherche-Portal, bei der genau diese
+Fragen bei der Anbindung des lokalen Bibliothekssystems eine Rolle
+spielten, wurde mit der Implementierung einer freien, auf SOAP
+basierenden WebServices-Schnittstelle begonnen.
+
+Die Open Library WebServices sind geboren.
+
+Wie schon OpenBib wurden Sie ursprünglich als Freizeitprojekt unter
+der GPL als OpenSource-Software begonnen und werden derzeit im
+Wesentlichen auch in diesem Rahmen weiterentwickelt. Geplant ist
+jedoch die Ausweitung auf weitere interessierte Entwickler, um eine
+allgemeine Nutzung der Schnittstelle insbesondere im Hinblick auf
+zusätzliche Funktionalitäten weiter voranzutreiben.
+
+Insofern ist jeder herzlich eingeladen, bei der Weiterentwicklung und
+Definition der Schnittstelle mitzuwirken.
+
+\chapter{Referenz}
+
+
+\section{Implementierung}
+
+Die Open Library WebServices, kurz OLWS, wurden mit dem Perl-Modul
+\texttt{SOAP::Lite} entwickelt. Damit ist eine Implementierung
+weiterer Funktionen sehr einfach m"oglich. Durch die Verwendung von
+SOAP kann jedoch prinzipiell auch jede andere Programmiersprache
+genutzt werden, um die WebServices anzusprechen bzw. die bestehenden
+WebServices zu reimplementieren.
+
+\section{WebServices}
+
+\subsection{urn:/Authentication}
+
+\subsubsection*{Beschreibung}
+"Uber dieses WebService wird die Authentifizierung am jeweiligen
+System gesteuert.
+
+\begin{tabular}{lp{10cm}}
+  Unterst"utzte Zielsysteme & \texttt{Sisis}\\
+  &\\
+  Implementiert "uber die Module & \texttt{OLWS::Sisis::Authentication.pm}\\
+\end{tabular}
+
+\subsubsection{Funktionen}
+
+\begin{tabular}{lp{10cm}}
+  Funktionsname & \texttt{authenticate\_user}\\
+  \hline
+  Argumente     & \texttt{(Benutzername, Passwort, Datenbankname})\\
+  R"uckgabe bei Erfolg & Benutzerinformationen:\\
+  & Vorname, Nachname, Geschlecht, Geburtsdatum, Ort, Strasse, PLZ,
+  Soll, Guthaben, Avanz, Branz, Bestellanz, Pflanz, Vmanz, Maanz,
+  Vlanz, Sperre, Sperrdatum, Email\\
+  
+  
+  &\\
+  % Fehlercodes: &\\
+  
+  % \texttt{100-199} & Authentifizierungsfehler\\
+  % \texttt{200-299} & Datenbankfehler\\
+\end{tabular}
+
+\subsection{urn:/Circulation}
+
+\subsubsection*{Beschreibung}
+
+"Uber dieses WebService werden benutzerkonto- bzw. ausleihspezifische
+Funktionen gesteuert.
+
+\begin{tabular}{lp{10cm}}
+  Unterst"utzte Zielsysteme & \texttt{Sisis}\\
+  &\\
+  Implementiert "uber die Module & \texttt{OLWS::Sisis::Circulation.pm}\\
+\end{tabular}
+
+\subsubsection{Funktionen}
+
+\begin{tabular}{lp{10cm}}
+  Name & \texttt{get\_borrows}\\
+  Beschreibung & Lieferung von Ausleihinformationen zu
+  einem authentifizierten Nutzer einer spezifischen Zieldatenbank\\
+  \hline
+  Argumente     & \texttt{(Benutzername, Passwort, Datenbankname)}\\
+  R"uckgabe bei Erfolg & Array mit Ausleihinformationen:\\
+  & Katkey, Signatur, AusleihDatum, RueckgabeDatum\\
+  &\\
+  % Fehlercodes: &\\
+  
+  % \texttt{100-199} & Authentifizierungsfehler\\
+  % \texttt{200-299} & Datenbankfehler\\
+\end{tabular}
+
+\begin{tabular}{lp{10cm}}
+  Name & \texttt{get\_reservations}\\
+  Beschreibung & Lieferung von Vormerkungsinformationen zu
+  einem authentifizierten Nutzer einer spezifischen Zieldatenbank\\
+  \hline
+  Argumente     & \texttt{(Benutzername, Passwort, Datenbankname)}\\
+  R"uckgabe bei Erfolg & Array mit Vormerkungsinformatione:\\
+  & Katkey, Mediennummer, VormerkDatum, AufrechtDatum, Stelle\\
+  &\\
+  % Fehlercodes: &\\
+  
+  % \texttt{100-199} & Authentifizierungsfehler\\
+  % \texttt{200-299} & Datenbankfehler\\
+\end{tabular}
+
+\begin{tabular}{lp{10cm}}
+  Name & \texttt{get\_reminders}\\
+  Beschreibung & Lieferung von "Uberziehungsinformationen zu
+  einem authentifizierten Nutzer einer spezifischen Zieldatenbank\\
+  \hline
+  Argumente     & \texttt{(Benutzername, Passwort, Datenbankname)}\\
+  R"uckgabe bei Erfolg & Array mit "Uberziehungsinformationen:\\
+  & Katkey, Mediennummer, AusleihDatum, Leihfristende, Mahngebuehr, Saeumnisgebuehr\\
+  &\\
+  % Fehlercodes: &\\
+  
+  % \texttt{100-199} & Authentifizierungsfehler\\
+  % \texttt{200-299} & Datenbankfehler\\
+\end{tabular}
+
+\subsection{urn:/Media}
+
+\subsubsection*{Beschreibung}
+
+"Uber dieses WebService wird der Zugriff auf die Katalogdaten im
+Zielsystem gesteuert.
+
+\begin{tabular}{lp{10cm}}
+  Unterst"utzte Zielsysteme & \texttt{Sisis}\\
+  &\\
+  Implementiert "uber die Module & \texttt{OLWS::Sisis::Media.pm}\\
+\end{tabular}
+
+\subsubsection{Funktionen}
+
+\begin{tabular}{lp{10cm}}
+  Name & \texttt{get\_native\_title\_by\_katkey}\\
+  Beschreibung & Lieferung der Titelinformationen zu einem Katkey
+  direkt aus den nativen Datenbank-Blobs\\
+  \hline
+  Argumente     & \texttt{(Datenbankname, Katkey)}\\
+  R"uckgabe bei Erfolg & Titeldaten im jeweiligen nativen Kategorienschema\\
+  &\\
+  % Fehlercodes: &\\
+  
+  % \texttt{100-199} & Authentifizierungsfehler\\
+  % \texttt{200-299} & Datenbankfehler\\
+\end{tabular}
+
+\subsection{urn:/MediaStatus}
+
+\subsubsection*{Beschreibung}
+
+"Uber dieses WebService wird der Medienausleihstatus zu den jeweiligen
+Medien geliefert.
+
+\begin{tabular}{lp{10cm}}
+  Unterst"utzte Zielsysteme & \texttt{Sisis}\\
+  &\\
+  Implementiert "uber die Module & \texttt{OLWS::Sisis::MediaStatus.pm}\\
+\end{tabular}
+
+\subsubsection{Funktionen}
+
+\begin{tabular}{lp{10cm}}
+  Funktionsname & \texttt{get\_mediastatus}\\
+  \hline
+  Argumente     & \texttt{(Katkey, Datenbankname)}\\
+  R"uckgabe bei Erfolg & Ausleihstatus eines Mediums\\
+  & Signatur, Exemplar, Standort, Status, Rueckgabe\\
+  &\\
+  % Fehlercodes: &\\
+  
+  % \texttt{100-199} & Authentifizierungsfehler\\
+  % \texttt{200-299} & Datenbankfehler\\
+\end{tabular}
+ 
+
+\chapter{Programmierbeispiele}
+
+An dieser Stelle werden zuk"unftig Programmierbeispiele in Perl genannt.
+
+\section{Client}
+
+An dieser Stelle werden Programmierbeispiele fuer die Implementation
+eines Clients gegeben, der auf einen spezifischen WebService zugreift.
+
+\section{Server}
+
+An dieser Stelle werden Programmierbeispiele fuer die Implementation
+eines Servers gegeben, der spezifische WebServices
+bereitstellt. Generell kann der Server als CGI-Programm, als
+eigenst"andiger D"amon oder unter mod\_perl laufen. Aus
+Performance-Gr"unden sollte auf die CGI-Variante im Produktionsbetrieb
+verzichtet werden. F"ur den Testbetrieb ist sie jedoch sehr gut geeignet.
+
+\end{document}
