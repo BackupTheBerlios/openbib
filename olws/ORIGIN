@@ -1,0 +1,49 @@
+Urspruenge und Ziel der Open Library WebServices (OLWS):
+
+Ziel des bei berliOS (www.berlios.de) gehosteten Projektes 'Open
+Library WebServices (OLWS)' ist die Weiterentwicklung und freie
+Bereitstellung einer webservicesbasierten OpenSource Zugriffs-
+schnittstelle auf lokale Bibliothekssysteme.
+
+OLWS hat seinen Ursprung im OpenBib Rechercheportal. Bei OLWS handelt
+es sich um ein davon unabhaengiges Teilprojekt, welches aus
+historischen Gruenden in dessen Projektinfrastruktur bei berliOS
+eingebettet ist. Waehrend das OpenBib Rechercheportal bereits die OLWS
+zum Zugriff auf das lokale Bibliothekssystem z.B. zur
+Authentifizierung, der Abfrage des jeweiligen Ausleihstatus eines
+Mediums sowie des Benutzerkontos nutzt, soll die OLWS-Schnittstelle
+insbesondere auch von anderen Software-Produkten verwendbar sein.
+
+Die Motivation hinter den OLWS ist vielschichtig:
+
+- Es wird eine Zugriffsschnittstelle benoetigt, die vollkommen offen
+  ist. Bereits existierende hochproprietaere Loesungen mit ihrer
+  etwaigen Lizenzproblematik sind dies zum Teil leider nicht.
+
+- Die Schnittstelle soll auf offenen Standards basieren. Aus diesem
+  Grund sollen SOAP und XML verwendet werden. Damit sollte auch eine
+  eventuell gewuenschte Implementierung in anderen Programmiersprachen
+  unproblematisch sein.
+
+- Die Schnittstelle soll zum Zugriff auf verschiedene lokale 
+  Bibliothekssysteme erweiterbar sein.
+
+- Die Schnittstelle soll neben OpenBib auch anderen Software-Produkten
+  den Zugriff auf die jeweiligen Funktionen des lokalen
+  Bibliothekssystems ermoeglichen.
+
+- Die Schnittstelle soll einfach, 'leichtgewichtig', flexibel aber
+  dennoch performant implementier- und erweiterbar sein.
+
+Als Programmiersprache kommt Perl zum Einsatz. Entwicklungsplattform
+ist Linux. Als ansprechbares lokales Bibliothekssystem ist derzeit
+Sisis SunRise(R) nutzbar. Eine Ausdehnung auf andere Systeme (z.B.
+Aleph von ExLibris(R)) von externer Seite ist ausdruecklich
+erwuenscht.
+
+Zielgruppe dieses Projektes sind insbesondere deutschsprachige
+Bibliotheken, z.B. an einer Universitaet, die sowohl die Flexibilitaet
+wie auch den freien Charakter einer OpenSource-Loesung fuer den
+Zugriff externer Programme auf ihre Lokalsysteme benoetigen.
+
+Oliver Flimm                                          Koeln, 27.2.2005 
