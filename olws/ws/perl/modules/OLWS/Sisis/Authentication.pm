@@ -30,6 +30,8 @@ package OLWS::Sisis::Authentication;
 use strict;
 use warnings;
 
+use Log::Log4perl qw(get_logger :levels);
+
 use DBI;
 
 use OLWS::Sisis::Config;
@@ -45,43 +47,47 @@ sub authenticate_user {
   
   my ($class, $username, $password, $database) = @_;
 
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
+  
   my %monthtab=(
-             Jan => '01',
-             Feb => '02',
-             Mar => '03',
-             Apr => '04',
-             May => '05',
-             Jun => '06',
-             Jul => '07',
-             Aug => '08',
-             Sep => '09',
-             Oct => '10',
-             Nov => '11',
-             Dec => '12',
-            );
+		Jan => '01',
+		Feb => '02',
+		Mar => '03',
+		Apr => '04',
+		May => '05',
+		Jun => '06',
+		Jul => '07',
+		Aug => '08',
+		Sep => '09',
+		Oct => '10',
+		Nov => '11',
+		Dec => '12',
+	       );
   
   #####################################################################
   # Verbindung zur SQL-Datenbank herstellen
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd});
-
+  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
+  
   my $result=$dbh->prepare("select count(*) from $database.sisis.d02ben where d02bnr = ? and d02opacpin = ?");
-
-  $result->execute($username,$password);
+  
+  $result->execute($username,$password) or $logger->error_die($DBI::errstr);
   
   my @resarr=$result->fetchrow_arrayref();
   my $count=$resarr[0][0];
-
+  
   if ($count != 1){
     $result->finish;
     $dbh->disconnect();
     return undef;
   }
-
-  my $result=$dbh->prepare("select * from $database.sisis.d02ben where d02bnr = ? and d02opacpin = ?");
-
-  $result->execute($username,$password);
-
+  
+  $result=$dbh->prepare("select * from $database.sisis.d02ben where d02bnr = ? and d02opacpin = ?");
+  
+  $result->execute($username,$password) or $logger->error_die($DBI::errstr);
+  
   my $res=$result->fetchrow_hashref();
   
   # Personendaten
@@ -92,7 +98,7 @@ sub authenticate_user {
   my $ort=$res->{'d02o1'};
   my $strasse=$res->{'d02s1'};
   my $plz=$res->{'d02p1'};
-
+  
   # Gebuehrendaten
   my $soll=$res->{'d02so1'};
   my $guthaben=$res->{'d02gut'};
@@ -112,17 +118,17 @@ sub authenticate_user {
   $day=~s/^(\d)$/0$1/;
   $month=~s/^(\d)$/0$1/;
   $geburtsdatum=$day.".".$monthtab{$month}.".".$year;
-
+  
   ($month,$day,$year)=$sperrdatum=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
   $day=~s/^(\d)$/0$1/;
   $month=~s/^(\d)$/0$1/;
   $sperrdatum=$day.".".$monthtab{$month}.".".$year;
-
-
+  
+  
   $result=$dbh->prepare("select * from $database.sisis.d02onl where d02obnr = ? and d02oart = 1");
-
-  $result->execute($username);
-
+  
+  $result->execute($username) or $logger->error_die($DBI::errstr);
+  
   my @emailadr=();
   while (my $res=$result->fetchrow_hashref()){
     my $singleemail=$res->{'d02ozeile'};
@@ -130,7 +136,25 @@ sub authenticate_user {
   }	
   
   my $email=join(" ; ",@emailadr);
-
+  
+  $result=$dbh->prepare("select count(*) from $database.sisis.d01buch where d01bnr = ? and d01status = 2");
+  
+  $result->execute($username) or $logger->error_die($DBI::errstr);
+  
+  my @resarray=$result->fetchrow_array();
+  my $bsanz=$resarray[0];
+  
+  # Sperre
+  if ($sperre){
+    $result=$dbh->prepare("select d65text from $database.sisis.d65param where d65nr = ? and d65typ=2");
+    $result->execute($sperre) or $logger->error_die($DBI::errstr);
+    
+    while (my $res=$result->fetchrow_hashref()){
+      my $sperrgrund=$res->{'d65text'};
+      $sperre=$sperrgrund;
+    }	
+  }
+  
   my $userinfo={
 		Vorname => $vorname,
 		Nachname => $nachname,
@@ -145,6 +169,7 @@ sub authenticate_user {
 
 		Avanz => $avanz,
 		Branz => $branz,
+		Bsanz => $bsanz,
 		Bestellanz => $bestellanz,
 		Pflanz => $pflanz,
 		Vmanz => $vmanz,
@@ -155,7 +180,7 @@ sub authenticate_user {
                 Sperrdatum => $sperrdatum,
                 Email => $email,		
 	       };
-
+  
   $result->finish;
   $dbh->disconnect();
 
