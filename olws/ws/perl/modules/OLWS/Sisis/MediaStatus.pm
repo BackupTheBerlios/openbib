@@ -2,7 +2,7 @@
 #
 #  Open Library WebServices
 #
-#  OLWS::MediaStatus
+#  OLWS::Sisis::MediaStatus
 #
 #  Dieses File ist (C) 2005 Oliver Flimm <flimm@openbib.org>
 #
@@ -30,8 +30,6 @@ package OLWS::Sisis::MediaStatus;
 use strict;
 use warnings;
 
-use Log::Log4perl qw(get_logger :levels);
-
 use DBI;
 
 use OLWS::Sisis::Config;
@@ -46,39 +44,110 @@ use vars qw(%config);
 sub get_mediastatus {
   
   my ($class, $katkey, $database) = @_;
-  
-  # Log4perl logger erzeugen
-  
-  my $logger = get_logger();
-  
+
   #####################################################################
   # Verbindung zur SQL-Datenbank herstellen
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
+  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd});
 
-  my $result=$dbh->prepare("select d01buch.d01ort,d01buch.d01ex,d01buch.d01status,d01buch.d01rv from d01buch where d01buch.d01katkey = ?") or $logger->error($DBI::errstr);
-  $result->execute($katkey) or $logger->error($DBI::errstr);
-  
+  my $result=$dbh->prepare("select * from $database.sisis.d50zweig");
+  $result->execute();
+
+  my %zweig=();
+  while (my $res=$result->fetchrow_hashref()){
+    $zweig{$res->{'d50zweig'}}{Bezeichnung}=$res->{'d50bezeich'};
+  }
+
+  $result=$dbh->prepare("select * from $database.sisis.d60abteil");
+  $result->execute();
+
+  my %abteilung=();
+  while (my $res=$result->fetchrow_hashref()){
+    $abteilung{$res->{'d60zweig'}}{$res->{'d60abt'}}=$res->{'d60bezeich'};
+  }
+
+  $result=$dbh->prepare("select * from $database.sisis.d41sig");
+  $result->execute();
+
+  my %sigtab=();
+  while (my $res=$result->fetchrow_hashref()){
+    $sigtab{$res->{'d41sig'}}=$res->{'d41gruppe'};
+  }
+
+  $result=$dbh->prepare("select * from $database.sisis.d43sigmag");
+  $result->execute();
+
+  my %sigmag=();
+  while (my $res=$result->fetchrow_hashref()){
+    $sigmag{$res->{'d43sgrp'}}=$res->{'d43magdr'};
+  }
+
+  $result=$dbh->prepare("select d01ort,d01entl,d01mtyp,d01ex,d01status,d01rv,d01abtlg,d01zweig from $database.sisis.d01buch where d01katkey = ?");
+  $result->execute($katkey);
+
   my @exemplarliste=();
   while (my $res=$result->fetchrow_hashref()){
     my $signatur=$res->{'d01ort'};
     my $exemplar=$res->{'d01ex'};
     my $rueckgabe=$res->{'d01rv'};
+    my $entl=$res->{'d01entl'};
     my $status=$res->{'d01status'};
-    my $standort=$res->{'d60bezeich'};
+    my $standort=$res->{'d01abtlg'};
+    my $mtyp=$res->{'d01mtyp'};
+    my $zweignr=$res->{'d01zweig'};
+    my $zweigst="";
 
-    if ($status eq "0"){
-      $status="bestellbar";
+    my $basissign=$signatur;
+
+    my $magazindrucker=undef;
+
+    while ((length($basissign) > 0) || (!defined($magazindrucker))){
+      if (defined($sigtab{$basissign})){
+        my $siggrp=$sigtab{$basissign};
+
+        $magazindrucker=$sigmag{$siggrp};
+      }
+
+      substr($basissign,-1,1)="";
+
     }
-    elsif ($status eq "2"){
-      $status="bestellt";
+
+    if ($abteilung{"$zweignr"}{"$standort"}){
+      $standort=$abteilung{"$zweignr"}{"$standort"};
     }
-    elsif ($status eq "4"){
-      $status="entliehen";
+
+    if ($zweig{"$zweignr"}{Bezeichnung}){
+      $standort=$zweig{"$zweignr"}{Bezeichnung}." / $standort";
+    }
+
+    if ($magazindrucker ne "0"){
+      if ($status eq "0"){
+        $status="bestellbar";
+      }
+      elsif ($status eq "2"){
+        $status="bestellt";
+      }
+      elsif ($status eq "4"){
+        $status="entliehen";
+      }
+      else {
+        $status="unbekannt";
+        # $status="Pr&auml;senzbestand";
+      }
     }
     else {
-      $status="unbekannt";
-      # $status="Pr&auml;senzbestand";
+      if ($status eq "0"){
+        $status="vorhanden";
+      }
+      elsif ($status eq "2"){
+        $status="vorhanden";
+      }
+      elsif ($status eq "4"){
+        $status="entliehen";
+      }
+      else {
+        $status="unbekannt";
+      }
     }
     
     if ($signatur=~/^19A/ || $signatur=~/^2\dA/ || $signatur=~/3[0-3]A/){
