@@ -30,6 +30,8 @@ package OLWS::Sisis::MediaStatus;
 use strict;
 use warnings;
 
+use Log::Log4perl qw(get_logger :levels);
+
 use DBI;
 
 use OLWS::Sisis::Config;
@@ -44,14 +46,20 @@ use vars qw(%config);
 sub get_mediastatus {
   
   my ($class, $katkey, $database) = @_;
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
+  
+  $logger->info("Request for Database: $database - Katkey: $katkey");
   
   #####################################################################
   # Verbindung zur SQL-Datenbank herstellen
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd});
+  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
   
   my $result=$dbh->prepare("select * from $database.sisis.d50zweig");
-  $result->execute();
+  $result->execute() or $logger->error_die($DBI::errstr);
   
   my %zweig=();
   while (my $res=$result->fetchrow_hashref()){
@@ -59,7 +67,7 @@ sub get_mediastatus {
   }
   
   $result=$dbh->prepare("select * from $database.sisis.d60abteil");
-  $result->execute();
+  $result->execute() or $logger->error_die($DBI::errstr);
   
   my %abteilung=();
   while (my $res=$result->fetchrow_hashref()){
@@ -67,7 +75,7 @@ sub get_mediastatus {
   }
   
   $result=$dbh->prepare("select d01ort,d01entl,d01mtyp,d01ex,d01status,d01rv,d01abtlg,d01zweig from $database.sisis.d01buch where d01katkey = ?");
-  $result->execute($katkey);
+  $result->execute($katkey) or $logger->error_die($DBI::errstr);;
   
   my @exemplarliste=();
   while (my $res=$result->fetchrow_hashref()){
@@ -109,6 +117,13 @@ sub get_mediastatus {
       else {
 	$status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/sab.html\" target=\"_blank\">SAB</a> / vormerkbar";
       }
+    }
+    
+    if ($standort=~/Lehrbuchsammlung/){
+      $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/lbs.html\" target=\"_blank\">LBS</a> / ausleihbar";
+    }
+    elsif ($standort=~/Lesesaal/){
+      $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/lesesaal.html\" target=\"_blank\">LS</a> / Pr&auml;senzbestand";
     }
     
     $rueckgabe=~s/12:00AM//;
