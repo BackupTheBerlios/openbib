@@ -168,6 +168,7 @@ System gesteuert.
 
 \subsubsection{Funktionen}
 
+\begin{shadowenv}
 \begin{tabular}{lp{10cm}}
   Funktionsname & \texttt{authenticate\_user}\\
   \hline
@@ -184,6 +185,7 @@ System gesteuert.
   % \texttt{100-199} & Authentifizierungsfehler\\
   % \texttt{200-299} & Datenbankfehler\\
 \end{tabular}
+\end{shadowenv}
 
 \subsection{urn:/Circulation}
 
@@ -200,6 +202,7 @@ Funktionen gesteuert.
 
 \subsubsection{Funktionen}
 
+\begin{shadowenv}
 \begin{tabular}{lp{10cm}}
   Name & \texttt{get\_borrows}\\
   Beschreibung & Lieferung von Ausleihinformationen zu
@@ -207,14 +210,33 @@ Funktionen gesteuert.
   \hline
   Argumente     & \texttt{(Benutzername, Passwort, Datenbankname)}\\
   R"uckgabe bei Erfolg & Array mit Ausleihinformationen:\\
-  & Katkey, Signatur, AusleihDatum, RueckgabeDatum\\
+  & Katkey, Signatur, MTyp, Mediennummer, AusleihDatum, RueckgabeDatum\\
   &\\
   % Fehlercodes: &\\
   
   % \texttt{100-199} & Authentifizierungsfehler\\
   % \texttt{200-299} & Datenbankfehler\\
 \end{tabular}
+\end{shadowenv}
 
+\begin{shadowenv}
+\begin{tabular}{lp{10cm}}
+  Name & \texttt{get\_orders}\\
+  Beschreibung & Lieferung von Bestellinformationen zu
+  einem authentifizierten Nutzer einer spezifischen Zieldatenbank\\
+  \hline
+  Argumente     & \texttt{(Benutzername, Passwort, Datenbankname)}\\
+  R"uckgabe bei Erfolg & Array mit Bestellinformationen:\\
+  & Katkey, Signatur, MTyp, Status, Mediennummer, BestellDatum\\
+  &\\
+  % Fehlercodes: &\\
+  
+  % \texttt{100-199} & Authentifizierungsfehler\\
+  % \texttt{200-299} & Datenbankfehler\\
+\end{tabular}
+\end{shadowenv}
+
+\begin{shadowenv}
 \begin{tabular}{lp{10cm}}
   Name & \texttt{get\_reservations}\\
   Beschreibung & Lieferung von Vormerkungsinformationen zu
@@ -229,10 +251,12 @@ Funktionen gesteuert.
   % \texttt{100-199} & Authentifizierungsfehler\\
   % \texttt{200-299} & Datenbankfehler\\
 \end{tabular}
+\end{shadowenv}
 
+\begin{shadowenv}
 \begin{tabular}{lp{10cm}}
   Name & \texttt{get\_reminders}\\
-  Beschreibung & Lieferung von "Uberziehungsinformationen zu
+  Beschreibung & Lieferung von "Uberziehungs- bzw. Geb"uhreninformationen zu
   einem authentifizierten Nutzer einer spezifischen Zieldatenbank\\
   \hline
   Argumente     & \texttt{(Benutzername, Passwort, Datenbankname)}\\
@@ -244,6 +268,7 @@ Funktionen gesteuert.
   % \texttt{100-199} & Authentifizierungsfehler\\
   % \texttt{200-299} & Datenbankfehler\\
 \end{tabular}
+\end{shadowenv}
 
 \subsection{urn:/Media}
 
@@ -260,6 +285,7 @@ Zielsystem gesteuert.
 
 \subsubsection{Funktionen}
 
+\begin{shadowenv}
 \begin{tabular}{lp{10cm}}
   Name & \texttt{get\_native\_title\_by\_katkey}\\
   Beschreibung & Lieferung der Titelinformationen zu einem Katkey
@@ -273,6 +299,7 @@ Zielsystem gesteuert.
   % \texttt{100-199} & Authentifizierungsfehler\\
   % \texttt{200-299} & Datenbankfehler\\
 \end{tabular}
+\end{shadowenv}
 
 \subsection{urn:/MediaStatus}
 
@@ -289,6 +316,7 @@ Medien geliefert.
 
 \subsubsection{Funktionen}
 
+\begin{shadowenv}
 \begin{tabular}{lp{10cm}}
   Funktionsname & \texttt{get\_mediastatus}\\
   \hline
@@ -301,24 +329,215 @@ Medien geliefert.
   % \texttt{100-199} & Authentifizierungsfehler\\
   % \texttt{200-299} & Datenbankfehler\\
 \end{tabular}
- 
+\end{shadowenv} 
 
 \chapter{Programmierbeispiele}
 
-An dieser Stelle werden zuk"unftig Programmierbeispiele in Perl genannt.
+F"ur die Programmierung der WebServices in Perl wird das Modul
+\texttt{SOAP::Lite} genutzt. Mit diesem ist es sehr einfach m"oglich
+sowohl die Client- wie auch die Server-Seite der
+SOAP-Kommunikationspartner zu implementieren.
 
 \section{Client}
 
-An dieser Stelle werden Programmierbeispiele f"ur die Implementation
-eines Clients gegeben, der auf einen spezifischen WebService zugreift.
+Der Client wird durch folgendes Grund-Konstrukt
+implementiert. Beispielhaft wird der Programm-Code der Funktion
+\texttt{authenticate\_olws\_user} aus \texttt{OpenBib::Login::Util}
+verwendet.
+
+\begin{verbatim}
+use SOAP::Lite;
+\end{verbatim}
+
+Mit \texttt{use} wird das Modul \texttt{SOAP::Lite} importiert.
+
+\begin{verbatim}
+sub authenticate_olws_user {
+[...]
+
+  my $soap = SOAP::Lite
+  -> uri("urn:/Authentication")
+  -> proxy($circcheckurl);
+\end{verbatim}
+
+Es wird ein SOAP-Objekt \texttt{\$soap} erzeugt, welches den Service
+\texttt{urn:/Authentication} anspricht, der "uber den effektiven URL
+\texttt{\$circcheckurl} erreicht wird. Hinter \texttt{\$circcheckurl}
+kann sich serverseitig ein \texttt{mod\_perl}-Handler, ein CGI-Skript
+oder ein eigenst"andiger D"amon verstecken.
+
+\begin{verbatim}
+  my $result = $soap->authenticate_user($username,$pin,$circdb);
+\end{verbatim}
+
+"Uber das SOAP-Objekt \texttt{\$soap} wird auf dem entfernten Server
+die Methode \texttt{authenticate\_user} mit entsprechenden Argumenten
+aufgerufen. Das Ergebnis dieses Aufrufs wird in \texttt{\$result}
+abgespeichert.
+
+\begin{verbatim}
+  my %userinfo=();
+
+  unless ($result->fault) {
+    
+    if (defined $result->result){
+      %userinfo = %{$result->result};
+      $userinfo{'erfolgreich'}="1";
+    }
+    else {
+      $userinfo{'erfolgreich'}="0";
+    }
+  } 
+  else {
+    $logger->error("SOAP Authentication Error", join ', ', 
+      $result->faultcode, $result->faultstring, $result->faultdetail);
+  }
+\end{verbatim}
+
+Je nachdem, ob der Aufruf erfolgreich war bzw. nicht, werden
+verschiedene Aktionen durchgef"uhrt, z.B. eine Fehlermeldung via
+\texttt{log4Perl} geloggt.
+
+\begin{verbatim}
+[...]
+}
+\end{verbatim}
 
 \section{Server}
 
-An dieser Stelle werden Programmierbeispiele f"ur die Implementation
-eines Servers gegeben, der spezifische WebServices
-bereitstellt. Generell kann der Server als CGI-Programm, als
-eigenst"andiger D"amon oder unter mod\_perl laufen. Aus
-Performance-Gr"unden sollte auf die CGI-Variante im Produktionsbetrieb
-verzichtet werden. F"ur den Testbetrieb ist sie jedoch sehr gut geeignet.
+Der Server kann als CGI-Programm, als eigenst"andiger D"amon oder
+unter mod\_perl laufen. Aus Performance-Gr"unden sollte auf die
+CGI-Variante im Produktionsbetrieb verzichtet werden. F"ur den
+Testbetrieb ist sie jedoch sehr gut geeignet.
+
+Grunds"atzlich besteht der Server aus einem Dispatcher, der als
+CGI-Skript, D"amon oder mod\_perl-Modul l"auft. Dieser Dispatcher
+nimmt die Anfragen entgegen und verteilt sie entsprechend der in ihm
+konfigurierten Namensr"aume auf ebenfals konfigurierte Klassen oder
+Module. 
+
+Ein Beispiel f"ur einen einfachen Dispatcher auf CGI-Basis lautet:
+
+\begin{verbatim}
+use SOAP::Transport::HTTP;
+use Log::Log4perl;
+
+Log::Log4perl->init_once($OLWS::Config::config{log4perl\_path});
+
+SOAP::Transport::HTTP::CGI
+  -> dispatch_with({
+                  'urn:/Authentication' => 'OLWS::Sisis::Authentication',
+                  'urn:/Circulation'    => 'OLWS::Sisis::Circulation',
+                  'urn:/Media'          => 'OLWS::Sisis::Media',
+                  'urn:/MediaStatus'    => 'OLWS::Sisis::MediaStatus',
+                   })
+  -> handle;
+\end{verbatim}
+
+In diesem Dispatcher werden die Namenr"aume
+\texttt{urn:/Authentication}, \texttt{urn:/Circulation},\newline
+\texttt{urn:/Media} und \texttt{urn:/MediaStatus} definiert sowie
+diesen Namensr"aumen die Module \newline \texttt{OLWS::Sisis::*}, in
+denen die Funktionen implementiert sind, zugeordnet.
+
+F"ur die Implementation muss dann nur noch das entsprechende Modul
+\texttt{OLWS::xyz::*} mit seinen Funktionen in Form eines Packages
+geschrieben werden. So ein Modul hat folgende Form:
+\begin{verbatim}
+package OLWS::Sisis::Media;
+
+use strict;
+use warnings;
+
+use Log::Log4perl qw(get_logger :levels);
+use DBI;
+use OLWS::Sisis::Config;
+use OLWS::Sisis::Data;
+
+# Importieren der Konfigurationsdaten als Globale Variablen
+# in diesem Namespace
+
+use vars qw(%config);
+
+*config=\%OLWS::Sisis::Config::config;
+
+sub get_native_title_by_katkey {
+
+  my ($class, $database, $katkey) = @_;
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
+
+  #####################################################################
+  # Verbindung zur SQL-Datenbank herstellen
+
+  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;
+                        server=$config{dbserver};
+                        host=$config{dbhost};port=$config{dbport}", 
+                        $config{dbuser}, $config{dbpasswd}) 
+     or $logger->error_die($DBI::errstr);
+
+  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
+  my $titelref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,
+                                              $dbh,$database,$katkey);
+
+  return $titelref;
+}
+
+1;
+\end{verbatim}
+
+Im Wesentlichen beschr"ankt sich die Implementation auf die
+\textbf{Definition einer Funktion}, hier
+
+\begin{verbatim}
+sub get_native_title_by_katkey {
+\end{verbatim}
+
+mit einer \textbf{Parameterliste}, hier
+
+\begin{verbatim}
+  my ($class, $database, $katkey) = @_;
+\end{verbatim}
+
+wobei \texttt{\$class} bei nicht objektorientierter Programmierung
+nicht verwendet wird,  einen \textbf{Verarbeitungsbereich}, hier
+
+\begin{verbatim}
+ # Log4perl logger erzeugen
+
+  my $logger = get_logger();
+
+  #####################################################################
+  # Verbindung zur SQL-Datenbank herstellen
+
+  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;
+                        server=$config{dbserver};
+                        host=$config{dbhost};port=$config{dbport}", 
+                        $config{dbuser}, $config{dbpasswd}) 
+     or $logger->error_die($DBI::errstr);
+
+  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
+  my $titelref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,
+                                              $dbh,$database,$katkey);
+
+\end{verbatim}
+
+in dem sich die eigentliche Programmlogik befindet und schlie"slich
+der R"uckgabe entsprechender Werte, hier
+
+\begin{verbatim}
+  return $titelref;
+\end{verbatim}
+
+Hiermit wurde der WebService \texttt{get\_native\_title\_by\_katkey}
+mit den Parametern \texttt{(Datenbank, Katalogschl"ussel)} definiert.
+
+Bei der Verwendung von \texttt{die}, oder hier \texttt{error\_die},
+wird die Funktion abgebrochen und Fehlercode/Meldung via SOAP
+zur"uckgeliefert.
+
+
 
 \end{document}
