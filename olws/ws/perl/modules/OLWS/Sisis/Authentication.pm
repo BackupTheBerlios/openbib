@@ -30,8 +30,6 @@ package OLWS::Sisis::Authentication;
 use strict;
 use warnings;
 
-use Log::Log4perl qw(get_logger :levels);
-
 use DBI;
 
 use OLWS::Sisis::Config;
@@ -47,25 +45,27 @@ sub authenticate_user {
   
   my ($class, $username, $password, $database) = @_;
   
-  # Log4perl logger erzeugen
-  
-  my $logger = get_logger();
-
   #####################################################################
   # Verbindung zur SQL-Datenbank herstellen
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd})  or $logger->error_die($DBI::errstr);
+  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd});
 
-  my $result=$dbh->prepare("select * from d02ben where d02bnr = ? and d02opacpin = ?") or $logger->error($DBI::errstr);
-  $result->execute($username,$password) or $logger->error($DBI::errstr);
+  my $result=$dbh->prepare("select count(*) from $database.sisis.d02ben where d02bnr = ? and d02opacpin = ?");
+
+  $result->execute($username,$password);
   
-  my $rows=$result->rows();
+  my @resarr=$result->fetchrow_arrayref();
+  my $count=$resarr[0][0];
 
-  if ($rows <= 0){
+  if ($count != 1){
     $result->finish;
     $dbh->disconnect();
     return undef;
   }
+
+  my $result=$dbh->prepare("select * from $database.sisis.d02ben where d02bnr = ? and d02opacpin = ?");
+
+  $result->execute($username,$password);
 
   my $res=$result->fetchrow_hashref();
   
