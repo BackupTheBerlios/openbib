@@ -30,5 +30,9 @@
 use SOAP::Transport::HTTP;
 
 SOAP::Transport::HTTP::CGI
-  -> dispatch_to('OLWS::Sisis::MediaStatus','OLWS::Sisis::Authentication')
+  -> dispatch_with({
+                     'urn:/Authentication' => 'OLWS::Sisis::Authentication',
+                     'urn:/Circulation'    => 'OLWS::Sisis::Circulation'
+                     'urn:/MediaStatus'    => 'OLWS::Sisis::MediaStatus',
+                   })
   -> handle;
