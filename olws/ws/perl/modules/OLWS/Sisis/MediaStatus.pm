@@ -44,47 +44,31 @@ use vars qw(%config);
 sub get_mediastatus {
   
   my ($class, $katkey, $database) = @_;
-
+  
   #####################################################################
   # Verbindung zur SQL-Datenbank herstellen
   
   my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd});
-
+  
   my $result=$dbh->prepare("select * from $database.sisis.d50zweig");
   $result->execute();
-
+  
   my %zweig=();
   while (my $res=$result->fetchrow_hashref()){
     $zweig{$res->{'d50zweig'}}{Bezeichnung}=$res->{'d50bezeich'};
   }
-
+  
   $result=$dbh->prepare("select * from $database.sisis.d60abteil");
   $result->execute();
-
+  
   my %abteilung=();
   while (my $res=$result->fetchrow_hashref()){
     $abteilung{$res->{'d60zweig'}}{$res->{'d60abt'}}=$res->{'d60bezeich'};
   }
-
-  $result=$dbh->prepare("select * from $database.sisis.d41sig");
-  $result->execute();
-
-  my %sigtab=();
-  while (my $res=$result->fetchrow_hashref()){
-    $sigtab{$res->{'d41sig'}}=$res->{'d41gruppe'};
-  }
-
-  $result=$dbh->prepare("select * from $database.sisis.d43sigmag");
-  $result->execute();
-
-  my %sigmag=();
-  while (my $res=$result->fetchrow_hashref()){
-    $sigmag{$res->{'d43sgrp'}}=$res->{'d43magdr'};
-  }
-
+  
   $result=$dbh->prepare("select d01ort,d01entl,d01mtyp,d01ex,d01status,d01rv,d01abtlg,d01zweig from $database.sisis.d01buch where d01katkey = ?");
   $result->execute($katkey);
-
+  
   my @exemplarliste=();
   while (my $res=$result->fetchrow_hashref()){
     my $signatur=$res->{'d01ort'};
@@ -96,58 +80,26 @@ sub get_mediastatus {
     my $mtyp=$res->{'d01mtyp'};
     my $zweignr=$res->{'d01zweig'};
     my $zweigst="";
-
-    my $basissign=$signatur;
-
-    my $magazindrucker=undef;
-
-    while ((length($basissign) > 0) || (!defined($magazindrucker))){
-      if (defined($sigtab{$basissign})){
-        my $siggrp=$sigtab{$basissign};
-
-        $magazindrucker=$sigmag{$siggrp};
-      }
-
-      substr($basissign,-1,1)="";
-
-    }
-
+    
     if ($abteilung{"$zweignr"}{"$standort"}){
       $standort=$abteilung{"$zweignr"}{"$standort"};
     }
-
+    
     if ($zweig{"$zweignr"}{Bezeichnung}){
       $standort=$zweig{"$zweignr"}{Bezeichnung}." / $standort";
     }
-
-    if ($magazindrucker ne "0"){
-      if ($status eq "0"){
-        $status="bestellbar";
-      }
-      elsif ($status eq "2"){
-        $status="bestellt";
-      }
-      elsif ($status eq "4"){
-        $status="entliehen";
-      }
-      else {
-        $status="unbekannt";
-        # $status="Pr&auml;senzbestand";
-      }
+    
+    if ($status eq "0"){
+      $status="bestellbar";
+    }
+    elsif ($status eq "2"){
+      $status="bestellt";
+    }
+    elsif ($status eq "4"){
+      $status="entliehen";
     }
     else {
-      if ($status eq "0"){
-        $status="vorhanden";
-      }
-      elsif ($status eq "2"){
-        $status="vorhanden";
-      }
-      elsif ($status eq "4"){
-        $status="entliehen";
-      }
-      else {
-        $status="unbekannt";
-      }
+      $status="unbekannt";
     }
     
     if ($signatur=~/^19A/ || $signatur=~/^2\dA/ || $signatur=~/3[0-3]A/){
@@ -164,11 +116,11 @@ sub get_mediastatus {
     $standort="-" unless ($standort);
     
     my $singleex={
-	       Signatur => $signatur,
-	       Exemplar => $exemplar,
-	       Standort => $standort,
-               Status => $status,	
-               Rueckgabe => $rueckgabe,
+		  Signatur => $signatur,
+		  Exemplar => $exemplar,
+		  Standort => $standort,
+		  Status => $status,	
+		  Rueckgabe => $rueckgabe,
 		 };
     
     push @exemplarliste, $singleex;
