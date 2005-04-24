@@ -109,7 +109,7 @@ sub authenticate_user {
   my $bestellanz=$res->{'d02bestellanz'}; # Anzahl bestellter Medien
   my $pflanz=$res->{'d02pflanz'};         # Anzahl fernleihbestellter Medien
   my $vmanz=$res->{'d02vmanz'};           # Anzahl vorgemerkter Medien
-  my $maanz=$res->{'d02maanz'};           # Anzahl gemahnter Medien
+  #my $maanz=$res->{'d02maanz'};           # Anzahl gemahnter Medien
   my $vlanz=$res->{'d02vlanz'};           # Anzahl verlaengerter Medien
   my $sperre=$res->{'d02sp1'};            # Sperre (inkl. Grund)
   my $sperrdatum=$res->{'d02d1sperre'};        # Sperrdatum
@@ -137,7 +137,7 @@ sub authenticate_user {
   
   my $email=join(" ; ",@emailadr);
   
-  $result=$dbh->prepare("select count(*) from $database.sisis.d01buch where d01bnr = ? and d01status = 2");
+  $result=$dbh->prepare("select count(*) from $database.sisis.d01buch where d01bnr = ? and d01status = 2") or $logger->error_die($DBI::errstr);
   
   $result->execute($username) or $logger->error_die($DBI::errstr);
   
@@ -146,14 +146,23 @@ sub authenticate_user {
   
   # Sperre
   if ($sperre){
-    $result=$dbh->prepare("select d65text from $database.sisis.d65param where d65nr = ? and d65typ=2");
+    my $result=$dbh->prepare("select d65text from $database.sisis.d65param where d65nr = ? and d65typ=2") or $logger->error_die($DBI::errstr);
     $result->execute($sperre) or $logger->error_die($DBI::errstr);
     
     while (my $res=$result->fetchrow_hashref()){
       my $sperrgrund=$res->{'d65text'};
       $sperre=$sperrgrund;
     }	
+    $result->finish;
   }
+
+  $result=$dbh->prepare("select count(*) from $database.sisis.d03geb where d03bnr = ? and d03stat != 4128") or $logger->error_die($DBI::errstr);
+  
+  $result->execute($username) or $logger->error_die($DBI::errstr);
+  
+  @resarr=$result->fetchrow_arrayref();
+  my $maanz=$resarr[0][0];
+
   
   my $userinfo={
 		Vorname => $vorname,
