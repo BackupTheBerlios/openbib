@@ -477,7 +477,7 @@ sub get_reminders {
   
   my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
   
-  my $result=$dbh->prepare("select * from $database.sisis.d03geb where d03bnr = ?");
+  my $result=$dbh->prepare("select * from $database.sisis.d03geb where d03bnr = ? and d03stat != 4128");
   $result->execute($username) or $logger->error_die($DBI::errstr);
   
   my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
@@ -490,6 +490,7 @@ sub get_reminders {
     
     my $saeumnisgebuehr=$res->{'d03gebu'};
     my $mahngebuehr=$res->{'d03mahn'};
+    my $mtyp=$res->{'d03mtyp'};
     
     my ($month,$day,$year)=$res->{'d03von'}=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
     $day=~s/^(\d)$/0$1/;
@@ -500,12 +501,17 @@ sub get_reminders {
     $day=~s/^(\d)$/0$1/;
     $month=~s/^(\d)$/0$1/;
     my $leihfristende=$day.".".$monthtab{$month}.".".$year;
+
+    if ($mtyp == 99){
+      $leihfristende="-";
+    }
     
     my $mediennummer=$res->{'d03gsi'};
     
     my $singlemahnung={
 		       Katkey          => $katkey,
 		       Mediennummer    => $mediennummer,
+		       MTyp            => $mtyp,
 		       AusleihDatum    => $ausleihdatum,
 		       Leihfristende   => $leihfristende,
 		       Mahngebuehr     => $mahngebuehr,
@@ -517,16 +523,21 @@ sub get_reminders {
   
   for (my $i=0;$i<=$#mahnungsliste;$i++){
     my $katkey=$mahnungsliste[$i]{Katkey};
-    
-    
+    my $mtyp=$mahnungsliste[$i]{MTyp};
+        
     my $titelref=undef;
-    
-    $titelref=OLWS::Sisis::Data::get_titdupref_by_katkey($dbh,$database,$katkey);
-    
-    unless (defined($titelref)){
-      $titelref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$katkey);
+
+    if ($mtyp eq "99"){
+      $titelref=OLWS::Sisis::Data::get_titzfl_by_katkey($dbh,$database,$katkey);
     }
+    else {
+      $titelref=OLWS::Sisis::Data::get_titdupref_by_katkey($dbh,$database,$katkey);
     
+      unless (defined($titelref)){
+        $titelref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$katkey);
+      }
+    }
+
     my %titel=%$titelref;
     
     my @verfasserkat=(
