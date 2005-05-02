@@ -332,8 +332,25 @@ sub get_reservations {
     
     my $katkey=$res->{'d04katkey'};
     
-    my $stelle=$res->{'d04vmnr'};
-    
+    my $stelle=-1;
+
+    my $result2=$dbh->prepare("select * from $database.sisis.d04vorm where d04katkey = ? order by d04vmnr");
+    $result2->execute($katkey) or $logger->error_die($DBI::errstr);
+
+    my $counter=1;
+
+    while (my $res2=$result2->fetchrow_hashref()){
+
+      my $bnr=$res2->{'d04bnr'};
+
+      if ($bnr eq $username){
+        $stelle=$counter;
+        last;
+      }
+
+      $counter++;
+    }
+
     my ($month,$day,$year)=$res->{'d04vmdatum'}=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
     $day=~s/^(\d)$/0$1/;
     $month=~s/^(\d)$/0$1/;
