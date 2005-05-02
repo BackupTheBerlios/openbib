@@ -109,23 +109,26 @@ sub get_mediastatus {
     else {
       $status="unbekannt";
     }
-    
-    if ($signatur=~/^19A/ || $signatur=~/^2\dA/ || $signatur=~/3[0-3]A/){
-      if ($status eq "bestellbar"){
-	$status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/sab.html\" target=\"_blank\">SAB</a> / ausleihbar";
+
+    if ($zweignr == 0){    
+      if ($signatur=~/^19A/ || $signatur=~/^2\dA/ || $signatur=~/3[0-3]A/){
+        if ($status eq "bestellbar"){
+	  $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/sab.html\" target=\"_blank\">SAB</a> / ausleihbar";
+        }
+        else {
+	  $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/sab.html\" target=\"_blank\">SAB</a> / vormerkbar";
+        }
       }
-      else {
-	$status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/sab.html\" target=\"_blank\">SAB</a> / vormerkbar";
+    
+      if ($standort=~/Lehrbuchsammlung/){
+        $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/lbs.html\" target=\"_blank\">LBS</a> / ausleihbar";
       }
-    }
+      elsif ($standort=~/Lesesaal/){
+        $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/lesesaal.html\" target=\"_blank\">LS</a> / Pr&auml;senzbestand";
+      }
     
-    if ($standort=~/Lehrbuchsammlung/){
-      $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/lbs.html\" target=\"_blank\">LBS</a> / ausleihbar";
     }
-    elsif ($standort=~/Lesesaal/){
-      $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/lesesaal.html\" target=\"_blank\">LS</a> / Pr&auml;senzbestand";
-    }
-    
+
     $rueckgabe=~s/12:00AM//;
     
     $standort="-" unless ($standort);
