@@ -1,0 +1,8 @@
+<!-- Begin EMAB Metadata -->
+<table cellpadding="2">
+[%- FOREACH emab IN config.metascheme.$collection.emab -%]
+[% SET emabvar = emab.cat %]
+<tr><td>[% emab.desc %]</td><td><input type="text" name="[% emab.cat %]" value="[% metainfo.$emabvar %]" size="100" maxlength="10000"></td></tr>
+[% END %] 
+</table>
+<!-- End EMAB Metadata -->

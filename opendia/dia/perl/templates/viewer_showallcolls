@@ -1,0 +1,49 @@
+[% PROCESS std_header %]
+
+  <body bgcolor="#FFFFFF">
+
+[% PROCESS corporate_banner %]
+
+<ul id="tabbingmenu">
+   <li><a class="active" href="http://[% config.servername %][% config.viewer_loc %]?action=showcolls">Serienauswahl</a></li>
+</ul>
+
+<div id="content">
+<table width="100%">
+<tr><th>Digitalisat-Serien an der USB K&ouml;ln</th></tr>
+<tr><td class="boxedclear" style="font-size:0.9em">
+<p />
+
+<table cellpadding="5">
+[% FOREACH collection IN collections %]
+<tr><td></td><td valign="top">
+<span style="font-weight: bold;">
+[% SET var = 'DC.Title' %]
+[% IF collection.meta.$var %]
+[% collection.meta.$var %]
+[% ELSE %]
+[% collection.name %]
+[% END %]
+</span>
+<p />
+[% SET var = 'DC.Description' %]
+[% IF collection.meta.$var %]
+<span style="font-size: 0.8em;">
+[% collection.meta.$var %]
+</span>
+<br>
+[% END %]
+<br>
+<a href="http://[% config.servername %][% config.viewer_loc %]?action=showsinglecoll;collection=[% collection.name %]">Inhalt</a>
+</td></tr>
+[% END %]
+</table>
+
+</table>
+</td></tr>
+</table>
+
+</div>
+<p />
+
+[% PROCESS std_footer %]

@@ -1,0 +1,218 @@
+[% PROCESS std_header %]
+
+  <body bgcolor="#FFFFFF">
+
+[% PROCESS corporate_banner %]
+
+<ul id="tabbingmenu">
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=showcolls">Serienauswahl</a></li>   
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?collection=[% collection %];action=choosecollection">Serie: [% collection %]</a></li>
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?collection=[% collection %];item=[% item %];action=showitem">Digitalisat: [% item %]</a></li>
+
+</ul>
+
+<div id="content">
+
+<table width="100%">
+<tr><th>Aktuelle Digitalisat-Serie: [% collection %] / Digitalisat: [% item %]</th></tr>
+
+<tr><td class="boxedclear" style="font-size:0.9em">
+
+<p />
+<ol>
+<li><a href="http://[% config.servername %][% config.editor_loc %]?action=genthumbs;collection=[% collection %];item=[% item %]">Bilder/Pictogramme erzeugen</a>
+<p />
+</li>
+<li><a href="http://[% config.servername %][% config.editor_loc %]?action=genweb;collection=[% collection %];item=[% item %]">Bilder/Web erzeugen</a>
+<p />
+</li>
+<li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %];meta=[% config.metadefaults.$collection %]">Metadaten [oberste Ebene/allgemein]</a>
+<p />
+</li>
+</ol>
+
+<form method="post" action="http://[% config.servername %][% config.editor_loc %]" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="action" value="genthumbs">
+<input type="hidden" name="collection" value="[% collection %]">
+
+[% color = 'white' %]
+
+<table cellpadding="5">
+[% FOREACH singleitem IN iteminfo %]
+[% IF singleitem.type == 'image' %]
+<tr bgcolor="[% color %]"
+[%- IF color == 'white' -%]
+[%- color = 'aliceblue' -%]
+[%- ELSE -%]
+[%- color = 'white' -%]
+[%- END -%]
+><td>
+[% IF singleitem.thumb %]
+ <a class="invisible" href="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/
+[%- IF singleitem.web -%]
+[% singleitem.web %]
+[%- ELSE -%]
+[% singleitem.name %]
+[%- END -%]
+"><img src="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem.thumb %]"></a>
+[% END %]
+</td><td>Bild</td><td><a href="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem.name %]">[% singleitem.name %]</a></td><td><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %];image=[% singleitem.name %];meta=[% config.metadefaults.$collection %]">Metadaten</a>
+</td></tr>
+[% END %]
+[% END %]
+</table>
+
+<!-- Begin Unterordnung 1 -->
+
+[% FOREACH singleitem IN iteminfo %]
+[% IF singleitem.type == 'chapter' %]
+[% SET iteminfo1 = singleitem.content %]
+<table width="100%">
+<tr><th>Kapitel [% singleitem.name %]</th></tr>
+
+<tr><td class="boxedclear">
+
+<a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %];sub=[% singleitem.name%];meta=[% config.metadefaults.$collection %]">Metadaten [Kapitel/allgemein]</a>
+
+
+[% color = 'white' %]
+
+<table cellpadding="5">
+[% FOREACH singleitem1 IN iteminfo1 %]
+[% IF singleitem1.type == 'image' %]
+<tr bgcolor="[% color %]"
+[%- IF color == 'white' -%]
+[%- color = 'aliceblue' -%]
+[%- ELSE -%]
+[%- color = 'white' -%]
+[%- END -%]
+><td>
+[% IF singleitem1.thumb %]
+ <a class="invisible" href="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem.name %]/
+[%- IF singleitem1.web -%]
+[% singleitem1.web %]
+[%- ELSE -%]
+[% singleitem1.name %]
+[%- END -%]
+"><img src="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem1.thumb %]"></a>
+[% END %]
+</td><td>Bild</td><td><a href="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem.name %]/[% singleitem1.name %]">[% singleitem1.name %]</a></td><td><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %];sub=[% singleitem.name %];image=[% singleitem1.name %];meta=[% config.metadefaults.$collection %]">Metadaten</a>
+</td></tr>
+[% END %]
+[% END %]
+</table>
+
+<!-- Begin Unterordnung 2 -->
+[% FOREACH singleitem2 IN iteminfo1 %]
+[% IF singleitem2.type == 'chapter' %]
+[% SET iteminfo2 = singleitem1.content %]
+<table width="100%">
+<tr><th>Sektion [% singleitem1.name %]</th></tr>
+
+<tr><td class="boxedclear">
+
+<a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %];sub=[% singleitem.name%];sub1=[% singleitem1.name%];meta=[% config.metadefaults.$collection %]">Metadaten [Sektion/allgemein]</a>
+
+
+
+[% color = 'white' %]
+
+<table cellpadding="5">
+[% FOREACH singleitem2 IN iteminfo2 %]
+[% IF singleitem2.type == 'image' %]
+<tr bgcolor="[% color %]"
+[%- IF color == 'white' -%]
+[%- color = 'aliceblue' -%]
+[%- ELSE -%]
+[%- color = 'white' -%]
+[%- END -%]
+><td>
+[% IF singleitem2.thumb %]
+ <a class="invisible" href="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem.name %]/[% singleitem1.name %]/
+[%- IF singleitem2.web -%]
+[% singleitem2.web %]
+[%- ELSE -%]
+[% singleitem2.name %]
+[%- END -%]
+"><img src="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem1.name %]/[% singleitem2.thumb %]"></a>
+[% END %]
+</td><td>Bild</td><td><a href="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem.name %]/[% singleitem2.name %]">[% singleitem2.name %]</a></td><td><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %];sub=[% singleitem.name %];sub1=[% singleitem1.name %];image=[% singleitem2.name %];meta=[% config.metadefaults.$collection %]">Metadaten</a>
+</td></tr>
+[% END %]
+[% END %]
+</table>
+
+<!-- Begin Unterordnung 3 -->
+
+[% FOREACH singleitem3 IN iteminfo2 %]
+[% IF singleitem3.type == 'chapter' %]
+[% SET iteminfo3 = singleitem2.content %]
+<table width="100%">
+<tr><th>Untersektion [% singleitem2.name %]</th></tr>
+
+<tr><td class="boxedclear">
+
+<a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %];sub=[% singleitem.name%];sub1=[% singleitem1.name%];sub2=[% singleitem2.name%];meta=[% config.metadefaults.$collection %]">Metadaten [Untersektion/allgemein]</a>
+
+[% color = 'white' %]
+
+<table cellpadding="5">
+[% FOREACH singleitem3 IN iteminfo3 %]
+[% IF singleitem3.type == 'image' %]
+<tr bgcolor="[% color %]"
+[%- IF color == 'white' -%]
+[%- color = 'aliceblue' -%]
+[%- ELSE -%]
+[%- color = 'white' -%]
+[%- END -%]
+><td>
+[% IF singleitem3.thumb %]
+ <a class="invisible" href="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem.name %]/[% singleitem1.name %]/[% singleitem2.name%]/
+[%- IF singleitem3.web -%]
+[% singleitem3.web %]
+[%- ELSE -%]
+[% singleitem3.name %]
+[%- END -%]
+"><img src="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem1.name %]/[% singleitem2.name %]/[% singleitem3.thumb %]"></a>
+[% END %]
+</td><td>Bild</td><td><a href="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem.name %]/[% singleitem2.name %]/[% singleitem3.name %]">[% singleitem3.name %]</a></td><td><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %];sub=[% singleitem.name %];sub1=[% singleitem1.name %];sub2=[% singleitem2.name %];image=[% singleitem3.name %];meta=[% config.metadefaults.$collection %]">Metadaten</a>
+</td></tr>
+[% END %]
+[% END %]
+</table>
+
+</td></tr>
+</table>
+<p />
+[% END %]
+[% END %]
+
+<!-- Ende Unterordnung 3 -->
+
+
+</td></tr>
+</table>
+<p />
+[% END %]
+[% END %]
+
+<!-- Ende Unterordnung 2 -->
+
+</td></tr>
+</table>
+<p />
+[% END %]
+[% END %]
+
+<!-- Ende Unterordnung 1 -->
+
+</form>
+</table>
+</td></tr>
+</table>
+
+</div>
+
+<p />
+
+[% PROCESS std_footer %]

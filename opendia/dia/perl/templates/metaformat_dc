@@ -1,0 +1,8 @@
+<!-- Begin New DC Metadata -->
+<table cellpadding="2">
+[%- FOREACH scheme IN config.metascheme.$collection.dc -%]
+[% SET schemevar = scheme.cat %]
+<tr><td>[% scheme.desc %]</td><td><input type="text" name="[% scheme.cat %]" value="[% metainfo.$schemevar %]" size="30" maxlength="10000"></td></tr>
+[% END %] 
+</table>
+<!-- End DC Metadata -->

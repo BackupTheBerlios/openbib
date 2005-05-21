@@ -1,0 +1,15 @@
+<!-- Begin Template: corporate_banner -->
+    <table  border="0" cellspacing="0" cellpadding="0" width="100%">
+	<tr>
+	  <td align="left" width="30%">
+	      <table><tr><td rowspan="2" valign="bottom"><a target="_blank" href="http://opendia.openbib.org/projekt/"><img src="/images/opendia/logo.png" border="0" alt="OpenDIA"/></a></td><td valign="bottom"><img src="/images/opendia/logozeile1.png" border="0" alt="Open Digital" /></td></tr><tr><td valign="top"><img src="/images/opendia/logozeile2.png" border="0" alt="Information/Image Archive" /></td></tr></table>
+	  </td>
+
+	  <td width="50%"> &nbsp;&nbsp;</td>
+	  
+	  <td align="right" width="20%">
+	    <a target="_top" href="http://www.uni-koeln.de/"><img src="/images/opendia/logorechts.png" height="95" border="0" alt="Rechtes Logo" /></a>
+	  </td>
+	</tr>
+    </table>
+<!-- End Template: corporate_banner -->

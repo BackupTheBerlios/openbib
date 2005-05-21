@@ -1,0 +1,67 @@
+Urspruenge und Ziel des Projekts Open Digital Information/Image
+Archive:
+
+Ziel des bei berliOS (www.berlios.de) gehosteten Projektes 'Open
+Digital Information/Image Archive (OpenDIA)' ist die Entwicklung und
+freie Bereitstellung eines Workflows und einer integrierten
+Weboberflaeche mit der unter minimalstem Aufwand digitale
+Informations-Serien - insbesondere Bildserien (Buecher usw.) -
+erstellt und fuer die Oeffentlichkeit bereitgestellt werden koennen.
+
+OpenDIA hat wie auch OLWS seinen Ursprung im OpenBib
+Recherche-Portal. Bei OpenDIA handelt es sich jedoch um ein davon
+unabhaengiges Teilprojekt, welches aus historischen Gruenden in dessen
+Projektinfrastruktur bei berliOS eingebettet ist.
+
+Die Motivation hinter OpenDIA ist vielschichtig:
+
+- Waehrend das OpenBib Rercherche-Portal primaer als
+  Nachweisinstrument fuer (nahezu) beliebige Daten fungiert, werden
+  fuer die Erstellung und Praesentation z.B. von digitalen Bildserien
+  andere Funktionalitaeten benoetigt, wie z.B. spezifische
+  Browsing-Funktionalitaeten oder Anreicherung mit Metadaten, die
+  konzeptionell sinnvollerweise separat angesiedelt werden sollen.
+ 
+- Bei der Digitalisierung z.B. von Buechern sind die entsprechenden
+  Einheiten und Untereinheiten mit Metainformationen zu
+  verknuepfen. Gerade fuer diesen Prozess der Anreicherung mit Metadaten
+  soll ein einfacher Workflow definiert werden, wie dies ausgehend von der
+  Digitalisierung geschehen soll.
+
+Grundziele der Gesamtloesung bestehend aus Workflow und Web-Anwendung
+sind:
+
+- Einfachheit:
+
+  Es sollen bereits vorhandene und bekannte Programme eingebunden
+  werden. Darueberhinaus sollen weitere benoetigte Funktionalitaeten
+  ueber eine einfache und intuitiv bedienbare Web-Anwendung
+  bereitgestellt werden.
+
+- Anpassbarkeit:
+
+  Das System soll einfach an eigene Beduerfnisse individuell anpassbar
+  und erweiterbar sein
+
+- Integrierbarkeit:
+
+  Das System soll einfach in externe Web-Applikationen integrierbar
+  sein, aber dennoch auch eigenstaendig genutzt werden koennen
+ 
+- Kostenfreiheit:
+
+  Alle beteiligten Komponenten sollen kostenfrei genutzt werden koennen.
+
+Als Programmiersprache kommt Perl zum Einsatz. Entwicklungsplattform
+ist Linux. Als ansprechbares lokales Bibliothekssystem fuer
+Kataloguebernahmen ist derzeit Sisis SunRise(R) ueber die OLWS
+nutzbar. Eine Ausdehnung auf andere Systeme (z.B.  Aleph von
+ExLibris(R)) von externer Seite ist ausdruecklich erwuenscht.
+
+Zielgruppe dieses Projektes sind insbesondere deutschsprachige
+Bibliotheken, z.B. an einer Universitaet, die sowohl die Flexibilitaet
+wie auch den freien Charakter einer OpenSource-Loesung fuer
+Er- und Bereitstellung von digitalen Informations-/Bildsammlungen
+benoetigen.
+
+Oliver Flimm                                          Koeln, 30.4.2005 

@@ -1,0 +1,451 @@
+#####################################################################
+#
+#  OpenDIA::Config
+#
+#  Dieses File ist (C) 2005 Oliver Flimm <flimm@openbib.org>
+#
+#  Dieses Programm ist freie Software. Sie koennen es unter
+#  den Bedingungen der GNU General Public License, wie von der
+#  Free Software Foundation herausgegeben, weitergeben und/oder
+#  modifizieren, entweder unter Version 2 der Lizenz oder (wenn
+#  Sie es wuenschen) jeder spaeteren Version.
+#
+#  Die Veroeffentlichung dieses Programms erfolgt in der
+#  Hoffnung, dass es Ihnen von Nutzen sein wird, aber OHNE JEDE
+#  GEWAEHRLEISTUNG - sogar ohne die implizite Gewaehrleistung
+#  der MARKTREIFE oder der EIGNUNG FUER EINEN BESTIMMTEN ZWECK.
+#  Details finden Sie in der GNU General Public License.
+#
+#  Sie sollten eine Kopie der GNU General Public License zusammen
+#  mit diesem Programm erhalten haben. Falls nicht, schreiben Sie
+#  an die Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
+#  MA 02139, USA.
+#
+#####################################################################   
+
+package OpenDIA::Config;
+
+use strict;
+use vars qw(%config);
+  
+%config = (
+	   
+	   # Versionnummer
+
+	   version => 'OpenDIA v0.7',
+
+	   servername    => 'server.openbib.org',
+
+           # Name des Datenbanksystems und des verwendeten DBI/DBD-Moduls
+
+           dbms      => 'mysql',
+           dbimodule => 'mysql',
+
+	   metadbhost    => 'localhost',
+	   metadbport    => '3306',
+	   metadbname    => 'opendia',
+	   metadbuser    => 'root',
+	   metadbpasswd  => 'StrenGeheim',
+
+           # Mapping der einzelnen Kompontenten zu ihren Zugriffs-URI's
+
+	   editor_loc    => '/opendia/editor',
+	   viewer_loc    => '/opendia/viewer',
+
+	   # Pfad zur Konfigurationsdatei von Log4Perl
+	  
+           log4perl_path           => '/pfad/zu/opendia.log4perl',
+
+	   # Pfad zu den Portal-Templates (Template Toolkit)
+
+	   tt_include_path         => '/pfad/zu/opendia/templates',
+
+	   # Mapping der einzelnen Kompontenten zu ihren Templates
+
+	   tt_editor_tname                    => 'editor',
+	   tt_editor_editmeta_tname           => 'editor_editmeta',
+	   tt_editor_showallcolls_tname       => 'editor_showallcolls',
+	   tt_editor_showsinglecoll_tname     => 'editor_showsinglecoll',
+	   tt_editor_showsingleitem_tname     => 'editor_showsingleitem',
+	   tt_error_tname                     => 'error',
+
+	   tt_viewer_showallcolls_tname       => 'viewer_showallcolls',
+	   tt_viewer_showsinglecoll_tname     => 'viewer_showsinglecoll',
+	   tt_viewer_showsingleitem_tname     => 'viewer_showsingleitem',
+
+	   # Verschiedene Pfadangaben
+
+	   base_dir                => '/opt/opendia',
+           collection_base_dir     => '/var/www/digiarchive',
+
+	   importpool              =>
+
+	   {
+	    # Serie/Collection
+	    einbaende => 
+	    {
+	     # URL des WebServices zur Katalogdatenuebernahme
+	     wsurl   => 'http://webservices.openbib.org/olws',
+
+	     # Datenbankname
+	     dbname  => 'lokalerdbname',
+
+	     # Mapping der Katalogkategorien zu den internen Kategorien
+	     mapping => 
+	     {
+	      '0100' => 'M0100',
+	      '0101' => 'M0101',
+	      '0331' => 'M0331',
+	      '0335' => 'M0335',
+	      '0361' => 'M0361',
+	      '0403' => 'M0403',
+	      '0412' => 'M0412',
+	      '0413' => 'M0413',
+	      '0425' => 'M0425',
+	      '0410' => 'M0410',
+	      '0370' => 'M0370',
+	      '0424' => 'M0424',
+	      '0035' => 'M0035',
+	      '0435' => 'M0435',
+	      '0710' => 'M0710',
+	      '0200' => 'M0200',
+	      '0700' => 'M0700',
+	      '0014' => 'M0014',
+	      '0750' => 'M0750',
+	      '0501' => 'M0501',
+	      '0508' => 'M0508',
+	     },
+	     
+	    },
+	   },
+
+           # Default Metadatenformate fuer die einzelnen Serien
+	   metadefaults            =>
+
+	   {
+	    einbaende => 'emab',
+	   },
+
+	   metascheme              => 
+
+	   {
+	    # Serie/Collection
+	    einbaende => 
+	    {
+	     # emab Metaformat - modifiziertes MAB2-Format fuer die
+	     #                   Beschreibung von Einband-Sammlungen
+	     emab =>
+	     [
+	      {
+	       # Ordnungsnummer
+	       nr   => 1,
+	       # Kategorie
+	       cat  => 'M0100',
+	       # Bezeichnung
+	       desc => 'Verfasser',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 2,
+	       # Kategorie
+	       cat  => 'M0101',
+	       # Bezeichnung
+	       desc => 'Person',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 3,
+	       # Kategorie
+	       cat  => 'M0331',
+	       # Bezeichnung
+	       desc => 'Titel',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 4,
+	       # Kategorie
+	       cat  => 'M0335',
+	       # Bezeichnung
+	       desc => 'Untertitel',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 5,
+	       # Kategorie
+	       cat  => 'M0361',
+	       # Bezeichnung
+	       desc => 'Beib&auml;nde',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 6,
+	       # Kategorie
+	       cat  => 'M0403',
+	       # Bezeichnung
+	       desc => 'Auflage',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 7,
+	       # Kategorie
+	       cat  => 'M0412',
+	       # Bezeichnung
+	       desc => 'Verlag',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 8,
+	       # Kategorie
+	       cat  => 'M0413',
+	       # Bezeichnung
+	       desc => 'Drucker',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 9,
+	       # Kategorie
+	       cat  => 'M0425',
+	       # Bezeichnung
+	       desc => 'E-Jahr',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 10,
+	       # Kategorie
+	       cat  => 'M0410',
+	       # Bezeichnung
+	       desc => 'ErschOrt',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 11,
+	       # Kategorie
+	       cat  => 'M0370',
+	       # Bezeichnung
+	       desc => 'Provinienz',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 12,
+	       # Kategorie
+	       cat  => 'M0424',
+	       # Bezeichnung
+	       desc => 'Fert.Jahr',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 13,
+	       # Kategorie
+	       cat  => 'M0035',
+	       # Bezeichnung
+	       desc => 'Fert.Ort',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 14,
+	       # Kategorie
+	       cat  => 'M0435',
+	       # Bezeichnung
+	       desc => 'Ma&szlig;e',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 15,
+	       # Kategorie
+	       cat  => 'M0710',
+	       # Bezeichnung
+	       desc => 'Jahrhundert',
+	      },
+	      	      {
+	       # Ordnungsnummer
+	       nr   => 16,
+	       # Kategorie
+	       cat  => 'M0200',
+	       # Bezeichnung
+	       desc => 'Region',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 17,
+	       # Kategorie
+	       cat  => 'M0700',
+	       # Bezeichnung
+	       desc => 'Einband',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 18,
+	       # Kategorie
+	       cat  => 'M0014',
+	       # Bezeichnung
+	       desc => 'Signatur',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 19,
+	       # Kategorie
+	       cat  => 'M0750',
+	       # Bezeichnung
+	       desc => 'Beschreibung',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 20,
+	       # Kategorie
+	       cat  => 'M0501',
+	       # Bezeichnung
+	       desc => 'Quellen',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 21,
+	       # Kategorie
+	       cat  => 'M0508',
+	       # Bezeichnung
+	       desc => 'Bibl. Nachweis',
+	      },
+
+	     ],	     
+
+	     # Dublin-Core Metaformat
+	     dc =>
+	     [
+	      {
+	       # Ordnungsnummer
+	       nr   => 1,
+	       # Kategorie
+	       cat  => 'DC.Title',
+	       # Bezeichnung
+	       desc => 'Titel',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 2,
+	       # Kategorie
+	       cat  => 'DC.Creator',
+	       # Bezeichnung
+	       desc => 'Autor',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 3,
+	       # Kategorie
+	       cat  => 'DC.Subject',
+	       # Bezeichnung
+	       desc => 'Schlagw&ouml;rter bzw. Klassifikation',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 4,
+	       # Kategorie
+	       cat  => 'DC.Description',
+	       # Bezeichnung
+	       desc => 'Inhaltliche Beschreibung',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 5,
+	       # Kategorie
+	       cat  => 'DC.Publisher',
+	       # Bezeichnung
+	       desc => 'Verleger / Herausgeber',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 6,
+	       # Kategorie
+	       cat  => 'DC.Contributors',
+	       # Bezeichnung
+	       desc => 'Sonstige Beteiligte',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 7,
+	       # Kategorie
+	       cat  => 'DC.Date',
+	       # Bezeichnung
+	       desc => 'Datum',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 8,
+	       # Kategorie
+	       cat  => 'DC.Type',
+	       # Bezeichnung
+	       desc => 'Ressourcenart',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 9,
+	       # Kategorie
+	       cat  => 'DC.Format',
+	       # Bezeichnung
+	       desc => 'Format',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 10,
+	       # Kategorie
+	       cat  => 'DC.Identifier',
+	       # Bezeichnung
+	       desc => 'Ressourcenidentifikation',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 11,
+	       # Kategorie
+	       cat  => 'DC.Source',
+	       # Bezeichnung
+	       desc => 'Quelle',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 12,
+	       # Kategorie
+	       cat  => 'DC.Language',
+	       # Bezeichnung
+	       desc => 'Sprache',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 13,
+	       # Kategorie
+	       cat  => 'DC.Relation',
+	       # Bezeichnung
+	       desc => 'Verh&auml;ltnis zu anderen Ressourcen',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 14,
+	       # Kategorie
+	       cat  => 'DC.Coverage',
+	       # Bezeichnung
+	       desc => 'Abdeckungsspektrum',
+	      },
+	      {
+	       # Ordnungsnummer
+	       nr   => 15,
+	       # Kategorie
+	       cat  => 'DC.Rights',
+	       # Bezeichnung
+	       desc => 'Rechtliche Bedingungen',
+	      },
+	     ],
+
+	    },
+
+	     # XML-Metaformat (RDF) fuer Dublin Core Daten
+
+	     dcxml =>
+	     [
+	     ],
+	     
+	    },
+
+
+	   },
+
+
+);
+
+1;

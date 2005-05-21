@@ -1,0 +1,534 @@
+[% PROCESS std_header %]
+
+  <body bgcolor="#FFFFFF">
+
+[% PROCESS corporate_banner %]
+
+<ul id="tabbingmenu">
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=showcolls">Serienauswahl</a></li>   
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?collection=[% collection %];action=choosecollection">Serie: [% collection %]</a></li>
+[% IF item %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?collection=[% collection %];item=[% item %];action=showitem">Digitalisat: [% item %]</a></li>
+[% END %]
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+">Metadaten</a></li>
+</ul>
+
+<div id="content">
+[% IF item %]
+<h1>Element
+
+[% item %]
+[%- IF sub -%]
+ / [% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+ / [% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+ / [% sub2 %]
+[%- END -%]
+[%- IF image -%]
+ / [% image %]
+[%- END -%]
+
+</h1>
+[% ELSE %]
+<h1>Serie [% collection %]</h1>
+[% END %]
+<p />
+
+[% IF image %]
+<table width="100%">
+<tr><th>Metadaten f&uuml;r Bild [% image %]</th></tr>
+
+<tr><td class="boxedclear">
+
+<table cellpadding="5">
+<tr><td>
+[%- FOREACH singleitem IN iteminfo -%]
+[%- IF singleitem.name == image -%]
+
+ <a class="invisible" href="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem.name %]"><img src="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% singleitem.web %]" height="500"></a>
+
+[%- END -%]
+[%- END -%]
+</td>
+<td valign="top" width="90%">
+
+[% IF config.metascheme.$collection.$meta && meta == 'dc' %]
+<ul id="tabbingmenu">
+[% IF config.metascheme.$collection.dc %]
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=dc
+">Dublin Core</a></li>
+[% END %]
+[% IF config.metascheme.$collection.xml %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=xml
+">XML</a></li>
+[% END %]
+[% IF config.metascheme.$collection.emab %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=emab
+">MAB/Einb&auml;nde</a></li>
+[% END %]
+</ul>
+
+<div id="content">
+<form method="get" action="http://[% config.servername %][% config.editor_loc %]">
+<input type="hidden" name="collection" value="[% collection %]">
+<input type="hidden" name="item" value="[% item %]">
+<input type="hidden" name="sub" value="[% sub %]">
+<input type="hidden" name="sub1" value="[% sub1 %]">
+<input type="hidden" name="sub2" value="[% sub2 %]">
+<input type="hidden" name="image" value="[% image %]">
+<input type="hidden" name="meta" value="[% meta %]">
+<input type="hidden" name="action" value="savemeta">
+
+[% PROCESS metaformat_dc %]
+
+<p />
+<input type="submit" value="Speichern">
+</form>
+
+</div>
+[% END %]
+
+[% IF config.metascheme.$collection.$meta && meta == 'xml' %]
+<ul id="tabbingmenu">
+[% IF config.metascheme.$collection.dc %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=dc
+">Dublin Core</a></li>
+[% END %]
+[% IF config.metascheme.$collection.xml %]
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=xml
+">XML</a></li>
+[% END %]
+[% IF config.metascheme.$collection.emab %]
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=emab
+">MAB/Einb&auml;nde</a></li>
+[% END %]
+</ul>
+
+<div id="content">
+
+[% PROCESS metaformat_xml %]
+
+</div>
+[% END %]
+
+[% IF config.metascheme.$collection.$meta && meta == 'emab' %]
+<ul id="tabbingmenu">
+[% IF config.metascheme.$collection.dc %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=dc
+">Dublin Core</a></li>
+[% END %]
+[% IF config.metascheme.$collection.xml %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=xml
+">XML</a></li>
+[% END %]
+[% IF config.metascheme.$collection.emab %]
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=emab
+">MAB/Einb&auml;nde</a></li>
+[% END %]
+</ul>
+
+<div id="content">
+<form method="get" action="http://[% config.servername %][% config.editor_loc %]">
+<input type="hidden" name="collection" value="[% collection %]">
+<input type="hidden" name="item" value="[% item %]">
+<input type="hidden" name="sub" value="[% sub %]">
+<input type="hidden" name="sub1" value="[% sub1 %]">
+<input type="hidden" name="sub2" value="[% sub2 %]">
+<input type="hidden" name="image" value="[% image %]">
+<input type="hidden" name="meta" value="[% meta %]">
+<input type="hidden" name="action" value="savemeta">
+
+[% PROCESS metaformat_emab %]
+
+<p />
+<input type="submit" value="Speichern">
+</form>
+
+</div>
+[% END %]
+
+</td>
+</tr>
+</table>
+
+</td></tr>
+</table>
+
+[% ELSE %]
+
+<table width="100%">
+<tr><th>Allgemeine Metadaten</th></tr>
+
+<tr><td class="boxedclear">
+
+<table cellpadding="5">
+<tr>
+<td valign="top">
+
+[% IF config.metascheme.$collection.$meta && meta == 'dc' %]
+<ul id="tabbingmenu">
+[% IF config.metascheme.$collection.dc %]
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+;meta=dc
+">Dublin Core</a></li>
+[% END %]
+[% IF config.metascheme.$collection.xml %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=xml
+">XML</a></li>
+[% END %]
+[% IF config.metascheme.$collection.emab %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=emab
+">MAB/Einb&auml;nde</a></li>
+[% END %]
+</ul>
+
+<div id="content">
+<form method="get" action="http://[% config.servername %][% config.editor_loc %]">
+<input type="hidden" name="collection" value="[% collection %]">
+<input type="hidden" name="item" value="[% item %]">
+<input type="hidden" name="sub" value="[% sub %]">
+<input type="hidden" name="sub1" value="[% sub1 %]">
+<input type="hidden" name="sub2" value="[% sub2 %]">
+<input type="hidden" name="image" value="[% image %]">
+<input type="hidden" name="meta" value="[% meta %]">
+<input type="hidden" name="action" value="savemeta">
+
+[% PROCESS metaformat_dc %]
+
+<p />
+<input type="submit" value="Speichern">
+</form>
+</div>
+[% END %]
+
+[% IF config.metascheme.$collection.$meta && meta == 'xml' %]
+<ul id="tabbingmenu">
+[% IF config.metascheme.$collection.dc %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=dc
+">Dublin Core</a></li>
+[% END %]
+[% IF config.metascheme.$collection.xml %]
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=xml
+">XML</a></li>
+[% END %]
+[% IF config.metascheme.$collection.emab %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=emab
+">MAB/Einb&auml;nde</a></li>
+[% END %]
+</ul>
+
+<div id="content">
+
+[% PROCESS metaformat_xml %]
+
+</div>
+[% END %]
+
+[% IF config.metascheme.$collection.$meta && meta == 'emab' %]
+<ul id="tabbingmenu">
+[% IF config.metascheme.$collection.dc %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=dc
+">Dublin Core</a></li>
+[% END %]
+[% IF config.metascheme.$collection.xml %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=xml
+">XML</a></li>
+[% END %]
+[% IF config.metascheme.$collection.emab %]
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=emab
+">MAB/Einb&auml;nde</a></li>
+[% END %]
+</ul>
+
+<div id="content">
+<form method="get" action="http://[% config.servername %][% config.editor_loc %]">
+<input type="hidden" name="collection" value="[% collection %]">
+<input type="hidden" name="item" value="[% item %]">
+<input type="hidden" name="sub" value="[% sub %]">
+<input type="hidden" name="sub1" value="[% sub1 %]">
+<input type="hidden" name="sub2" value="[% sub2 %]">
+<input type="hidden" name="image" value="[% image %]">
+<input type="hidden" name="meta" value="[% meta %]">
+<input type="hidden" name="action" value="savemeta">
+
+[% PROCESS metaformat_emab %]
+
+<p />
+<input type="submit" value="Speichern">
+</form>
+
+[% IF NOT sub && NOT sub1 && NOT sub2 %]
+<form method="get" action="http://[% config.servername %][% config.editor_loc %]">
+<input type="hidden" name="collection" value="[% collection %]">
+<input type="hidden" name="item" value="[% item %]">
+<input type="hidden" name="sub" value="[% sub %]">
+<input type="hidden" name="sub1" value="[% sub1 %]">
+<input type="hidden" name="sub2" value="[% sub2 %]">
+<input type="hidden" name="image" value="[% image %]">
+<input type="hidden" name="meta" value="[% meta %]">
+<input type="hidden" name="action" value="importpool">
+<input type="submit" value="&Uuml;bernahme aus Katalog">
+</form>
+[% END %]
+</div>
+[% END %]
+
+</td>
+</tr>
+</table>
+
+</td></tr>
+</table>
+
+[% END %]
+
+</div>
+<p />
+
+[% PROCESS std_footer %]

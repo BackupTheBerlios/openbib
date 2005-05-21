@@ -1,0 +1,38 @@
+<!-- Begin DC Metadata / XML/RDF -->
+&lt;rdf:RDF<br />
+&nbsp;&nbsp;&nbsp;xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"<br />
+&nbsp;&nbsp;&nbsp;&nbsp;xmlns:dc="http://purl.org/dc/elements/1.1/"&nbsp;&gt;&nbsp;&nbsp;<br />
+&lt;rdf:Description&nbsp;about=""&nbsp;&gt;&nbsp;&nbsp;<br />
+[% SET cat = "DC.Title" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Title&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Title&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Creator" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Creator&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Creator&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Subject" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Subject&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Subject&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Description" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Description&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Description&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Publisher" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Publisher&nbsp;&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Publisher&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Contributors" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Contributors&gt;[% metainfo.$cat %]&lt;/dc:Contributors&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Date" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Date&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Type" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Type&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Format" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Format&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Format&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Identifier" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Identifier&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Identifier&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Source" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Source&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Source&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Language" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Language&nbsp;&nbsp;&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Language&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Relation" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Relation&nbsp;&nbsp;&nbsp;&nbsp;&gt;IsPartOf&nbsp;[% metainfo.$cat %]&lt;/dc:Relation&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Coverage" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Coverage&nbsp;&nbsp;&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Coverage&nbsp;&gt;&nbsp;<br />
+[% SET cat = "DC.Rights" %]
+&nbsp;&nbsp;&nbsp;&lt;dc:Rights&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt;[% metainfo.$cat %]&lt;/dc:Rights&nbsp;&gt;&nbsp;<br />
+&lt;/rdf:Description&gt;&nbsp;&nbsp;<br />
+&lt;/rdf:RDF&gt;<br />
+<!-- End DC Metadata / XML/RDF -->

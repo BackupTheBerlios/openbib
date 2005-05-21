@@ -1,0 +1,39 @@
+-------------------------------------------------
+--------------- T A B E L L E N -----------------
+-------------------------------------------------
+
+-------------------------------------------------
+------------------ Metadaten --------------------
+-------------------------------------------------
+
+create table meta (
+  id INT UNSIGNED AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  collection TEXT,
+  item       TEXT,
+  sub        TEXT,
+  sub1       TEXT,
+  sub2       TEXT,
+  image      TEXT,
+  thumb      TEXT,
+  web        TEXT,
+
+  type       TEXT,
+  metascheme TEXT,
+
+  category   TEXT,
+  content    TEXT,
+  contentft  TEXT,
+ 
+  INDEX(id),
+  INDEX(collection(254)),
+  INDEX(item(254)),
+  INDEX(sub(254)),
+  INDEX(sub1(254)),
+  INDEX(sub2(254)),
+  INDEX(type(254)),
+  INDEX(metascheme(254)),
+  INDEX(category(254)),
+  INDEX(content(254)),
+  FULLTEXT(contentft)
+
+);

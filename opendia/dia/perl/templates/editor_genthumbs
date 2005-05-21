@@ -1,0 +1,19 @@
+[% PROCESS std_header %]
+
+  <body bgcolor="#FFFFFF">
+
+[% PROCESS corporate_banner %]
+
+<tr><td class="boxedclear" style="font-size:0.9em">
+W&auml;hlen Sie eine der vorhanden Digitalisat-Serien f&uuml;r die weitere Bearbeitung aus:
+<p />
+<form method="post" action="http://[% config.servername %][% config.editor_loc %]" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="action" value="genthumbs">
+<input type="hidden" name="collection" value="[% collection %]">
+</form>
+</table>
+</td></tr>
+</table>
+
+
+[% PROCESS std_footer %]
