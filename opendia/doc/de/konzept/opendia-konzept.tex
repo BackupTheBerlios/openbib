@@ -1,0 +1,365 @@
+%\documentclass[11pt]{scrartcl}
+\documentclass[11pt, twoside, a4paper, BCOR8mm, DIV12, bibtotoc,idxtotoc]{scrreprt}
+\usepackage{german}
+\usepackage{typearea}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{graphicx}
+
+% Zusaetzliche Picture-Umgebungen (z.B. shadowenv)
+\usepackage{picins}
+
+% Header anpassbar
+\usepackage{fancyhdr}
+
+% Headings umdefinieren
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[RO]{\nouppercase{\rightmark}}
+\fancyhead[LE]{\nouppercase{\leftmark}}
+\fancyfoot[RO, LE]{\thepage}
+
+%\addtolength{\headwidth}{\marginparsep}
+%\addtolength{\headwidth}{\marginparwidth}
+\addtolength{\headwidth}{1cm}
+
+\parindent0.0mm
+\parskip0.3cm    
+\typearea{13}
+
+\begin{document}
+
+\begin{titlepage}
+
+\begin{center}
+\rule[-.1in]{16cm}{1mm}\\[3mm]
+{\fontfamily{cmss}\fontseries{bx}\fontshape{n}\fontsize{20}{20pt}\selectfont
+  www.openbib.org $\bullet$ OpenBib Rechercheportal}\\[-2mm]
+\rule[-.1in]{16cm}{1mm}
+
+\vspace{5cm}
+
+  \textbf{\fontfamily{cmss}\fontseries{bx}\fontshape{n}\fontsize{30}{30pt}\selectfont Open Digital Information/Image Archive (OpenDIA)\\[3mm] Workflow-Konzept}
+
+  \vspace{2cm}
+
+  Oliver Flimm \texttt{<flimm@openbib.org>}\\
+  Stand: \today
+
+  \vspace{7cm}
+
+\rule[-.1in]{16cm}{1mm}\\[3mm]
+{\fontfamily{cmss}\fontseries{bx}\fontshape{n}\fontsize{20}{20pt}\selectfont
+  www.openbib.org $\bullet$ OpenBib Rechercheportal}\\[-2mm]
+\rule[-.1in]{16cm}{1mm}
+
+\end{center}
+
+\end{titlepage}
+
+%\thispagestyle{empty}
+
+%\begin{verbatim}
+
+
+%Copyright (c) 2005 Oliver Flimm <flimm@openbib.org>
+
+%Es wird die Erlaubnis gegeben dieses Dokument zu kopieren, verteilen 
+%und/oder zu veraendern unter den Bedingungen der GNU Free
+%Documentation License, Version 1.1 oder einer spaeteren, von der Free 
+%Software Foundation veroeffentlichten Version; mit den
+%Unveraenderlichen Abschnitten DEREN TITEL AUFGEZAEHLT sind, mit den 
+%Vorderseitentexten die AUFGEZAEHLT sind, und mit den Rueckseitentexten
+%die AUFGEZAEHLT sind. Eine Kopie dieser Lizenz ist in dem Abschnitt 
+%enthalten, der mit "GNU Free Documentation License"
+%\end{verbatim}
+
+\tableofcontents
+
+\chapter{Aufgabe}
+
+Die zu bew"altigende Aufgabe besteht in der Erstellung, Beschreibung,
+Darstellung und Ver\-brei\-tung von Digitalisat-Serien. Bei den
+Digitalisaten handelt es sich prim"ar um Folgen von digital
+ein\-ge\-scann\-ten Bildern, die eine logische Einheit bilden - z.B. ein
+Buch, einen Einband, ein Akzessions\-jour\-nal usw. In sich k"onnen diese
+Digitalisate eine hierarchische Struktur mit verschiedenen
+Ord\-nungs\-einheiten aufweisen, wie z.B. Kapitel, Sektionen,
+Untersektionen usw.
+
+Mit diesem Papier soll ein Konzept vorgestellt werden, wie ein
+Einfachstansatz f"ur einen Workflow realisiert werden kann, mit dem
+diese Aufgaben zu bew"altigen sind.
+
+Grunds"atzlich sind in dem Workflow folgende Schritte abzudecken:
+
+\begin{description}
+\item[Scan-Vorgang] In diesem Schritt werden im einem die
+  Bild-Dateien in einer gr"o"stm"oglichen -- aber dennoch sinnvollen
+  -- Aufl"osung erzeugt. Diese Daten m"ussen gespeichert werden.
+\item[Anreicherung mit Meta-Daten] Zusammengeh"orige Bild-Dateien
+  bilden ein logisches Digitalisat und m"ussen mit Meta-Daten
+  angereichert werden.  Diese k"onnen das gesamte Digitalisat,
+  einzelne Ordnungs\-einheiten (z.B. Kapitel usw. mit festgelegter
+  Abfolge) oder einzelne Bilder beschreiben und m"ussen u.a. auch die
+  Gesamt-Struktur der Bilder bzgl.  Ordnungseinheiten und Abfolgen
+  beschreiben (ala Inhaltsverzeichnis/Ebe\-nen).
+\end{description}
+
+Damit ist der Hauptteil der zu leistenden Arbeit abgedeckt. Die
+Anreicherung mit Meta-Daten bindet das meiste Personal und stellt den
+aufw"andigste Teil dar. Nachdem alle Meta-Daten erfasst sind, folgen
+diese Schritte:
+
+\begin{description}
+\item[Pr"asentation] Die Bilder m"ussen mit ihren Meta-Daten und ihrer
+  Ordnungsstruktur im Web pr"asentiert werden. Das stellt ein geringes
+  Problem dar, da sich prinzipiell programm\-tech\-nisch alle denkbaren
+  Browsing/Darstellungsarten anhand der Metadaten und der Bilder
+  erzeugen lassen. Denkbar sind sowohl teils statische Webseiten, die
+  im Voraus erzeugt werden m"ussen, oder dynamisch just-in-time
+  generierte Webseiten, die durch ein geeignetes Programm angezeigt
+  werden.
+\item[Integration] Durch geeignete Mechanismen muss eine Integration
+  in andere Dienste -- unabh"angig von einer angestrebten
+  eigenst"andigen Nutzbarkeit -- m"oglich sein. Hierzu geh"ort die
+  lokale Integration in Nachweisinstrumente wie den KUG, aber auch die
+  Integration in externe Systeme, z.B. via OAI oder WebServices.
+
+\end{description}
+
+\chapter{Grundkonzept}
+
+
+\section{Anforderungen}
+
+
+\subsection{Flexibilit"at}
+
+Die zu bew"altigende Aufgabe ist bezogen auf ihre wesentlichen
+Schritte sehr klar strukturiert. Dennoch kann f"ur jeden dieser
+Schritte der Teufel im Detail stecken. Erfahrungsgem"a"s werden erst
+nach und nach konrete Anforderungen (z.B. speziell das zu verwendende
+Meta-Datenformat) formuliert, so da"s davon auszugehen ist, dass die
+erste Version in der Realisierung nicht die letzte bleibt. Daher ist
+eine maximale Flexibilit"at der anvisierten L"osung unabdingbar.
+
+
+\subsection{Einfachheit in der Bedienung und Administration}
+
+Die L"osung mu"s letztlich durch das vorhandene Personal
+administriert, angepasst, erweitert und bedient werden. Aus diesem
+Grund sollte sie 
+
+\begin{itemize}
+\item auf bereits Bekanntem aufsetzen und
+\item keine neuen nicht beherrschte Technologien einsetzen. 
+\end{itemize}
+
+\subsection{Kosten}
+
+Ebenso spielen die Kosten eine wesentliche Rolle. Kommerzielle
+L"osungen sind in der Regel nicht sehr preiswert. Durch die Verwendung
+von bereits vorhandener bekannter Software und bekannten Technologien
+sowie von OpenSource-Produkten k"onnen die Kosten minimiert werden.
+
+
+\section{Konzept}
+
+Unter Ber"ucksichtigung der Anforderungen kann eine Workflow wie folgt
+realisiert werden.
+
+\subsection{Scan-Vorgang}
+
+Die Dateien werden gescannt und in einem Verzeichnisbaum auf einem
+Netzwerk-Laufwerk \emph{struk\-tu\-riert und darin in der jeweils logischen
+Abfolge} gespeichert. Strukturiert bedeutet eine Verzeich\-nis\-struk\-tur
+auf dem Laufwerk in der Form
+
+\begin{verbatim}
+.../collection/digitalisat/kapitel/unterkapitel/etc.
+\end{verbatim}
+
+Die generelle Organisation erfolgt in Digitalisierung-Serien
+(Collections), in denen Digitalisate abgelegt werden. 
+
+Durch die Verwendung von den Verzeichnissen unterhalb
+\texttt{digitalisat} lassen sich hierarchische Strukturen des
+Dokuments abbilden. So k"onnten schon beim Scan die Verzeichnisse,
+Unterverzeich\-nis\-se etc. auf dem Laufwerk erzeugt werden, die dann
+einem Kapitel, Unterkapitel etc.  entsprechen. Wenn keine
+(Unter)kapitel etc. existieren, dann umso besser, da einfacher.
+
+
+Beispiel ohne Kapitel f"ur die Digitalisierungs-Serie 'einbaende':
+
+\begin{verbatim}
+.../einbaende/1/0001.tif
+.../einbaende/1/0002.tif
+.../einbaende/1/0003.tif
+.../einbaende/1/0004.tif
+.../einbaende/1/0005.tif
+\end{verbatim}
+
+Beispiel mit Kapitel f"ur die Digitalisierungs-Serie 'einbaende':
+
+\begin{verbatim}
+.../einbaende/1/0001.tif
+.../einbaende/1/0002.tif
+.../einbaende/1/kap_1/0003.tif
+.../einbaende/1/kap_1/0004.tif
+\end{verbatim}
+
+Bei Digitalisaten aus katalogisierten B"uchern entspr"ache der
+\texttt{digitalisat} sinnvollerweise dem numerischen Katalogschl"ussel. In den
+Beispielen w"are der entsprechende Katalogschl"ussel in der zugeh"origen
+Sisis-Datenbank z.B. 1. "Uber eine solche Vereinbarung w"are eine
+Daten"uber\-nahme aus den Katalogdaten problemlos m"oglich.
+
+Die verwendeten Werkzeuge dieses Schrittes sind bereits vorhanden und
+in der Bedienung bekannt. Es ist der Scanner und ein Datei-Browser
+(Windows Explorer oder KDE Konqueror).
+
+Als Ergebnis dieses Schrittes liegen die Bild-Daten in der korrekten
+Reihenfolge und Strukturierung auf dem Netzlaufwerk vor.
+
+
+\subsection{Anreicherung mit Meta-Daten}
+
+F"ur das Anlegen von Meta-Daten (und zus"atzliche Arbeiten f"ur die
+Web-Pr"asentation, die auch hier angesiedelt/angestossen werden
+k"onn(t)en) sind verschiedene Modelle denkbar. Ein solches Modell soll
+nun vorgestellt werden.
+
+
+\subsubsection{Meta-Daten-Mapping "uber das Datei-System}
+
+Der Grundgedanke ist: \emph{Meta-Informationen werden in Dateien mit
+  geeigneten Namen abgespeichert, so dass eine Zuordnung zu einem
+  Gesamtdigitalisat, (Unter)Kapitel oder Bild m"oglich ist.}
+
+Folgende weitere Definitionen erfolgen:
+
+\begin{itemize}
+\item Alle Meta-Daten werden in Dateien abgelegt, die eine spezifische
+  Endung (z.B. \texttt{.dsc}) besitzen.
+\item Pro Kategorie eines Meta-Datums zu einem Bezugs-Objekt
+  (Digitalisat-Serie, einzelnes Digitalisat, einzelnes Bild einzelnes
+  Kapitel etc.) wird eine Datei verwendet.
+\item Jede Meta-Daten-Kategorie wird im Meta-Daten-Dateinamen
+  kodiert. 
+\item Meta-Daten zu einer hierarchischen Ebene (Digitalisat-Serie, einzelnes
+Digitalisat, Kapitel etc.) beginnen mit \texttt{meta}.
+\item Meta-Daten zu einer (Bild-)Datei beginnen mit dem Dateinamen.
+\end{itemize}
+
+\textbf{Beispiel:} Willk"urliche Metainformation 'Beschreibung' via
+Meta-Daten-Kategorie DC.Subject
+
+Beschreibung des Gesamtdokuments/Digitalisates:
+\begin{verbatim}
+.../einbaende/1/meta_DC.Subject.dsc 
+\end{verbatim}
+
+Beschreibung eines Bildes 0001.tif:
+\begin{verbatim}
+.../einbaende/1/0001.tif_DC.Subject.dsc
+\end{verbatim}
+
+Beschreibung des Kapitels 1:
+\begin{verbatim}
+.../einbaende/1/kap_1/meta_DC.Subject.dsc
+\end{verbatim}
+
+Beschreibung des Bildes 0003.tif in Kapitel 1:
+\begin{verbatim}
+.../einbaende/1/kap_1/0003.tif_DC.Subject.dsc
+\end{verbatim}
+
+\subsubsection{Web-basierter Editor f"ur die Meta-Datenverarbeitung}
+
+Der Web-basierte Editor greift grund"atzlich auf den Festplattenbereich zu,
+auf dem im voran\-ge\-gan\-ge\-nen Schritt die Scans abgelegt wurde. Damit kann die
+Web-Schnittstelle von sich aus schon auf die so strukturierten Bild-Dateien
+zugreifen.
+
+Der Benutzer bekommt in einer Auswahl alle
+Digitalisierungs-Serienverzeichnisse (siehe oben:
+\texttt{.../collection/...}) auf dem Netzlaufwerk angeboten, von der
+er die Digitalisierungs-Serie (collection) ausw"ahlt, die er
+bearbeiten m"ochte.
+
+Daraufhin bekommt er die vorhandenen einzelnen Digitalisate
+(siehe oben: .../.../digitalisat/...) angezeigt, von denen er sich eines
+ausw"ahlen kann. 
+
+Daraufhin bekommt er eine Darstellung der Dokumentbestandteile/struktur
+angezeigt. 
+
+An dieser Stelle soll er nun seine Meta-Daten eingeben k"onnen.
+
+Zus"atzlich k"onnten an dieser Stelle verschiedene Schritte
+angesiedelt sein, die f"ur die Web-Ver"offentlichung relevant sind und
+von hier aus anstossen werden k"onnten.. Dazu k"onnte die automatische
+Erzeugung von Pictogrammen/Thumbnails der tif-Bilder sowie einer
+Version f"ur die Web-Darstellung geh"oren.
+
+Hier wird auch die M"oglichkeit der Daten"uber\-nahme aus dem Sisis-Katalog
+angeboten werden.
+
+Die Abspeicherung der hier eingegebenen Metadaten erfolgt in dem oben
+dargelegten Text-Dateischema.  Eine direkte Speicherung in einer
+XML-Strukur w"are ebenso m"oglich. Gleiches gilt f"ur den Aufruf eines
+schon bearbeiteten Digitalisats. Die vorher aufgenommenen Meta-Informationen
+k"onnen aus dem Text-Dateischema extrahiert werden, oder aus einer vorher
+ab\-ge\-spei\-cher\-ten XML-Datei.
+
+Ebenso k"onnen hier automatisch URN's generiert, an die DDB gemeldet werden
+etc. pp. Hier ist fast alles automatisierbare ansiedelbar.
+
+Dieser Ansatz bietet folgenden Vorteile:
+
+\begin{itemize}
+\item Einfache Bedienung
+\item Einfache Eingabem"oglichkeit auch vieler (gleichartiger)
+Meta-Informationen 'auf einen Rutsch'
+\item Kopplung mit dem Sisis-Katalogsystem problemlos m"oglich zur
+automatischen Meta-Daten\-"uber\-nahme bzw. -er\-zeugung.
+\end{itemize}
+
+
+\subsection{Pr"asentation}
+
+Ausgehend von den Metadaten und den Bildern wird ein
+'Viewer'-Programm erstellt, um die Digitalisate anschauen zu
+k"onnen. Hier ist die Integration einer MySQL-Datenbank sinnvoll, in
+die nach Fertigstellung eines Digitalisats oder einer
+Digitalisie\-rungs-Serie die entsprechenden Informationen abgelegt
+werden k"onnen, um diese dann bei der Pr"asentation (z.B. beim
+Browsing) schnell verwenden zu k"onnen. Generell
+sehe ich diesen Teil jedoch als ziemlich problemlos an, weswegen ich dazu nichts weiter
+schreibe.
+
+
+\subsection{Fazit}
+
+Der Einfachstansatz einse Workflow-Konzeptes ist beliebig
+modifizierbar, soll aber im Wesentlichen zeigen, dass alle Phasen des
+Workflows auch mit sehr *einfachen* Bordmitteln plus ein wenig
+Programmierung bew"altigt werden k"onnen.
+
+Der Ansatz ist so offen, da"s beliebige Meta-Datenformate (auch
+parallel) f"ur beliebige Digitalisierungs-Serien realisiert werden
+k"onnen. Jedes Meta-Datenformat mu"s lediglich in einer
+Konfigurationsdatei mit seiner Struktur abgelegt werden.
+
+Dieser Ansatz realisiert genau die an die L"osung gestellten
+Anforderungen:
+
+\begin{itemize}
+\item Keine Kosten
+\item Maximale Flexibilit"at
+\item Simpel und daher auch einfach zu administrieren, erweitern und bedienen.
+\end{itemize}
+
+\end{document}
