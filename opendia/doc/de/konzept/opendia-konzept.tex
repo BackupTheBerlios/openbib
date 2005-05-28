@@ -77,7 +77,6 @@
 \tableofcontents
 
 \chapter{Aufgabe}
-
 Die zu bew"altigende Aufgabe besteht in der Erstellung, Beschreibung,
 Darstellung und Ver\-brei\-tung von Digitalisat-Serien. Bei den
 Digitalisaten handelt es sich prim"ar um Folgen von digital
@@ -92,7 +91,6 @@ Einfachstansatz f"ur einen Workflow realisiert werden kann, mit dem
 diese Aufgaben zu bew"altigen sind.
 
 Grunds"atzlich sind in dem Workflow folgende Schritte abzudecken:
-
 \begin{description}
 \item[Scan-Vorgang] In diesem Schritt werden die
   Bild-Dateien in einer gr"o"stm"oglichen -- aber dennoch sinnvollen
@@ -103,14 +101,13 @@ Grunds"atzlich sind in dem Workflow folgende Schritte abzudecken:
   einzelne Ordnungs\-einheiten (z.B. Kapitel usw. mit festgelegter
   Abfolge) oder einzelne Bilder beschreiben und m"ussen u.a. auch die
   Gesamt-Struktur der Bilder bzgl.  Ordnungseinheiten und Abfolgen
-  beschreiben (ala Inhaltsverzeichnis/Ebe\-nen).
+  beschreiben (entsprechend Inhaltsverzeichnissen/Ebe\-nen).
 \end{description}
 
 Damit ist der Hauptteil der zu leistenden Arbeit abgedeckt. Die
 Anreicherung mit Meta-Daten bindet das meiste Personal und stellt den
-aufw"andigste Teil dar. Nachdem alle Meta-Daten erfasst sind, folgen
+aufw"andigsten Teil dar. Nachdem alle Meta-Daten erfasst sind, folgen
 diese Schritte:
-
 \begin{description}
 \item[Pr"asentation] Die Bilder m"ussen mit ihren Meta-Daten und ihrer
   Ordnungsstruktur im Web pr"asentiert werden. Das stellt ein geringes
@@ -125,17 +122,13 @@ diese Schritte:
   eigenst"andigen Nutzbarkeit -- m"oglich sein. Hierzu geh"ort die
   lokale Integration in Nachweisinstrumente wie den KUG, aber auch die
   Integration in externe Systeme, z.B. via OAI oder WebServices.
-
 \end{description}
 
 \chapter{Grundkonzept}
 
-
 \section{Anforderungen}
 
-
 \subsection{Flexibilit"at}
-
 Die zu bew"altigende Aufgabe ist bezogen auf ihre wesentlichen
 Schritte sehr klar strukturiert. Dennoch kann f"ur jeden dieser
 Schritte der Teufel im Detail stecken. Erfahrungsgem"a"s werden erst
@@ -146,18 +139,15 @@ eine maximale Flexibilit"at der anvisierten L"osung unabdingbar.
 
 
 \subsection{Einfachheit in der Bedienung und Administration}
-
 Die L"osung mu"s letztlich durch das vorhandene Personal
 administriert, angepasst, erweitert und bedient werden. Aus diesem
 Grund sollte sie 
-
 \begin{itemize}
 \item auf bereits Bekanntem aufsetzen und
-\item keine neuen nicht beherrschte Technologien einsetzen. 
+\item keine neuen, nicht beherrschten Technologien einsetzen. 
 \end{itemize}
 
 \subsection{Kosten}
-
 Ebenso spielen die Kosten eine wesentliche Rolle. Kommerzielle
 L"osungen sind in der Regel nicht sehr preiswert. Durch die Verwendung
 von bereits vorhandener bekannter Software und bekannten Technologien
@@ -165,36 +155,31 @@ sowie von OpenSource-Produkten k"onnen die Kosten minimiert werden.
 
 
 \section{Konzept}
-
 Unter Ber"ucksichtigung der Anforderungen kann ein Workflow wie folgt
 realisiert werden.
 
 \subsection{Scan-Vorgang}
-
 Die Dateien werden vom zust"andigen Personal gescannt und in einem
 Verzeichnisbaum auf einem Netz-Laufwerk \emph{struk\-tu\-riert und
   darin in der jeweils logischen Abfolge} entsprechend vorher
 getroffener Vereinbarungen gespeichert. Strukturiert bedeutet eine
 Verzeich\-nis\-struk\-tur auf dem Laufwerk in der Form
-
 \begin{verbatim}
 .../collection/digitalisat/kapitel/unterkapitel/etc.
 \end{verbatim}
-
-Die generelle Organisation erfolgt in Digitalisierung-Serien
+Die generelle Organisation erfolgt in Digitalisat-Serien
 (Collections), in denen Digitalisate abgelegt werden. 
 
-Durch die Verwendung von den Verzeichnissen unterhalb
-\texttt{digitalisat} lassen sich hierarchische Strukturen des
-Dokuments allein mit den Mittel eines Dateisystems abbilden. So
-k"onnten schon beim Scan die Verzeichnisse, Unterverzeich\-nis\-se
-etc. auf dem Laufwerk erzeugt werden, die dann einem Kapitel,
-Unterkapitel etc.  entsprechen. Wenn keine (Unter)kapitel etc.
-existieren, dann umso besser, da einfacher.
+Durch die Verwendung von Verzeichnissen unterhalb \texttt{digitalisat}
+lassen sich hierarchische Struk\-tu\-ren des Dokuments allein mit den
+Mittel eines Dateisystems abbilden. So k"onnten schon beim Scan die
+Verzeichnisse, Unterverzeich\-nis\-se etc. auf dem Laufwerk erzeugt
+werden, die dann einem Kapitel, Unterkapitel etc.  entsprechen. Wenn
+keine (Unter)kapitel etc.  existieren, dann vereinfacht sich die
+Organisation der Bild-Daten entsprechend.
 
 
 Beispiel ohne Kapitel f"ur die Digitalisat-Serie 'einbaende':
-
 \begin{verbatim}
 .../einbaende/1/0001.tif
 .../einbaende/1/0002.tif
@@ -204,7 +189,6 @@ Beispiel ohne Kapitel f"ur die Digitalisat-Serie 'einbaende':
 \end{verbatim}
 
 Beispiel mit Kapitel f"ur die Digitalisat-Serie 'einbaende':
-
 \begin{verbatim}
 .../einbaende/1/0001.tif
 .../einbaende/1/0002.tif
@@ -213,7 +197,7 @@ Beispiel mit Kapitel f"ur die Digitalisat-Serie 'einbaende':
 \end{verbatim}
 
 Bei Digitalisaten aus katalogisierten B"uchern entspr"ache
-\texttt{digitalisat} sinnvollerweise dem numerischen
+\texttt{digitalisat} sinnvollerweise dem nu\-mer\-ischen
 Katalogschl"ussel. In den Beispielen w"are der entsprechende
 Katalogschl"ussel in der zugeh"origen Katalog-Datenbank, in den
 Beispielen z.B. 1. "Uber eine solche Vereinbarung w"are eine
@@ -228,7 +212,6 @@ Reihenfolge und Strukturierung auf dem Netz-Laufwerk vor.
 
 
 \subsection{Anreicherung mit Meta-Daten}
-
 F"ur das Anlegen von Meta-Daten (und zus"atzliche Arbeiten f"ur die
 Web-Pr"asentation, die auch hier angesiedelt/angestossen werden
 k"onn(t)en) sind verschiedene Modelle denkbar. Ein solches Modell soll
@@ -236,14 +219,12 @@ nun vorgestellt werden.
 
 
 \subsubsection{Meta-Daten-Mapping "uber das Datei-System}
-
 Der Grundgedanke ist: \emph{Meta-Informationen werden in Dateien mit
-  geeigneten Namen an geeigneter Stelle abgespeichert, so dass eine
-  Zuordnung zu einer Digitalisat-Serie, einem Gesamtdigitalisat,
+  geeigneten Namen an ge\-eig\-ne\-ter Stelle abgespeichert, so dass eine
+  Zuordnung zu einer Digitalisat-Serie, einem Gesamt\-di\-gi\-ta\-li\-sat,
   (Unter)Kapitel oder Bild m"oglich ist.}
 
 Das bedeutet in der konkreten Realisierung:
-
 \begin{itemize}
 \item Alle Meta-Daten werden in Dateien abgelegt, die eine spezifische
   Endung (z.B. \texttt{.dsc}) besitzen.
@@ -289,10 +270,9 @@ Beschreibung des Bildes 0003.tif in Kapitel 1:
 \end{verbatim}
 
 Ein gro"ser Vorteil dieses Ansatzes ist
-
 \begin{itemize}
 \item die M"oglichkeit der sofortigen Verwendung beliebiger
-  Meta-Datenkategorien, ohne das zugrundeliegende Datenmodell jeweils
+  Meta-Datenkategorien, ohne das zugrunde liegende Datenmodell jeweils
   dem neuen Meta-Datenmodell anpassen zu m"ussen,
 \item die M"oglichkeit auch nachtr"aglich -- nach der Vergabe von
   Meta-Daten (s.u.) -- die Struktur des Dokuments durch einfache Operationen
@@ -300,19 +280,25 @@ Ein gro"ser Vorteil dieses Ansatzes ist
 \end{itemize}
 
 \subsubsection{Web-basierter Editor f"ur die Meta-Datenverarbeitung}
-
 Der Web-basierte Editor greift grund"atzlich auf den
 Festplattenbereich zu, auf dem im voran\-ge\-gan\-ge\-nen Schritt die
 Scans abgelegt wurde. Damit kann die Web-Schnittstelle von sich aus
 schon auf die so strukturierten Bild-Dateien zugreifen.
 
 Der Benutzer bekommt in einer Auswahl alle 
-Digitalisat-Serienverzeichnisse (\texttt{.../collection/...}) auf dem Netz-Laufwerk angeboten, von der
+Digitalisat-Serienverzeichnisse 
+\begin{verbatim}
+.../collection/...
+\end{verbatim}
+auf dem Netz-Laufwerk angeboten, von der
 er die Digitalisat-Serie (collection) ausw"ahlt, die er
 bearbeiten m"ochte.
 
 Daraufhin bekommt er die vorhandenen einzelnen Digitalisate
-(\texttt{.../.../digitalisat/...}) angezeigt, von denen er sich eines
+\begin{verbatim}
+.../.../digitalisat/...
+\end{verbatim}
+an\-ge\-zeigt, von denen er sich eines
 ausw"ahlen kann. Unabh"angig davon kann der Benutzer an dieser Stelle
 Meta-Daten f"ur die Digitalisat-Serie vergeben.
 
@@ -327,7 +313,7 @@ Zus"atzlich k"onnten an dieser Stelle verschiedene Schritte
 angesiedelt sein, die f"ur die Web-Ver"offentlichung relevant sind und
 von hier aus anstossen werden k"onnten. Dazu k"onnte die automatische
 Erzeugung von Pictogrammen/Thumbnails der gescannten Bilder sowie eine
-oder mehrere spezielle Version f"ur die Web-Darstellung geh"oren.
+oder mehrere spezielle Versionen f"ur die Web-Darstellung geh"oren.
 
 Hier wird auch die M"oglichkeit der Daten"uber\-nahme aus einem
 bereits bestehenden Katalog angeboten werden.
@@ -343,7 +329,6 @@ Ebenso k"onnen hier automatisch URN's generiert, an die DDB gemeldet
 werden usw. Hier ist fast alles automatisierbare ansiedelbar.
 
 Dieser Ansatz bietet folgende Vorteile:
-
 \begin{itemize}
 \item Einfache Bedienung
 \item Einfache Eingabem"oglichkeit auch vieler (gleichartiger)
@@ -355,7 +340,6 @@ automatischen Meta-Daten\-"uber\-nahme bzw. -er\-zeugung.
 
 
 \subsection{Pr"asentation}
-
 Ausgehend von den Metadaten und den Bildern wird ein Programm
 erstellt, um die Digitalisate zu pr"asentieren. Hier ist die
 Integration einer MySQL-Datenbank sinnvoll, in die nach Fertigstellung
@@ -365,9 +349,7 @@ werden k"onnen, um diese dann bei der Pr"asentation (z.B. beim
 Browsing) schnell verwenden zu k"onnen. Generell ist dieser Teil --
 wenn die Meta-Daten einmal existieren -- sehr einfach zu realisieren.
 
-
 \subsection{Integration}
-
 Durch die Verwendung der MySQL-Datenbank sind aus den dort
 angesiedelten Informationen alle denkbaren Ausgabeformate
 generierbar. Diese k"onnen XML-basiert sein und z.B. via OAI angeboten
@@ -375,32 +357,24 @@ werden. Ebenso ist durch die Offenheit der Anwendung eine Integration
 in andere Systeme problemlos m"oglich.
 
 \subsection{Fazit}
-
 Der dargestellte Einfachstansatz eines Workflow-Konzeptes auf
-Grundlage des verwendeten Mappings in das Dateisystem
-
-
-
+Grundlage des verwendeten Map\-pings in das Dateisystem
 \begin{verbatim}
 Scannen -> Meta-Daten Editor -> Praesentation/Integration
 \end{verbatim}
-
-
-ist beliebig
-modifizierbar, soll aber im Wesentlichen zeigen, dass alle Phasen des
-Workflows auch mit sehr einfachen Bordmitteln (Scanner samt Program,
-Datei-Browser und Web-Browser) und etwas Programmierung bew"altigt
-werden k"onnen.
+ist beliebig modifizierbar, soll aber im Wesentlichen zeigen, dass
+alle Phasen des Workflows auch mit sehr einfachen Bordmitteln (Scanner
+samt Program, Datei-Browser und Web-Browser) und etwas Programmierung
+bew"altigt werden k"onnen.
 
 Der Ansatz ist so offen, da"s beliebige Meta-Datenformate (auch
 parallel) f"ur beliebige Digitalisie\-rungs-Serien realisiert werden
 k"onnen. Jedes Meta-Datenformat mu"s lediglich in einer
-Konfigurationsdatei mit seiner Struktur abgelegt werden. Eine
+Kon\-fi\-gu\-ra\-tions\-datei mit seiner Struktur abgelegt werden. Eine
 "Anderung der Programme, des Datenmodells usw. ist nicht notwendig.
 
 Dieser Ansatz realisiert damit genau die an die L"osung gestellten
 Anforderungen:
-
 \begin{itemize}
 \item Simpel und daher auch einfach zu administrieren, erweitern und
   bedienen.
