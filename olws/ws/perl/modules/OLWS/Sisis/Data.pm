@@ -203,7 +203,7 @@ sub get_sikfstabref {
 
 
 sub get_normdata_ans {
-  my ($dbh,$sikfstabref,$database,$verwkey,$fnr,$inh)=@_;
+  my ($dbh,$sikfstabref,$database,$verwkey,$fnr,$titinh)=@_;
 
   # Log4perl logger erzeugen
 
@@ -213,7 +213,8 @@ sub get_normdata_ans {
   
   my @normtabs = ("per_daten", "koe_daten", "swd_daten", "sys_daten");
   
-  my $nansetzung = "";
+  my $ansetzung = "";
+  my $inh="";
   
   my $tabelle=$normtabs[$sikfstab{refnr}[$fnr]-1];
   
@@ -242,12 +243,14 @@ sub get_normdata_ans {
 	# nicht multiples Feld
 	if ( $fnr == 1 ){
 	  $ansetzung = substr($rawdata,$i+4,$len);
+
+	  # Moegliche Indikatoren auswerten
 	  if ( substr($ansetzung,0,1) eq " " ){
 	    $ansetzung =~ s/^ //;
 	  }
-	  else {
-	    $ansetzung = "(" . substr($ansetzung,0,1) . ")" . substr($ansetzung,1);
-	  }
+#	  else {
+#	    $ansetzung = "(" . substr($ansetzung,0,1) . ")" . substr($ansetzung,1);
+#	  }
 	  $i = $j + 1;
 	}
 	else {
@@ -268,13 +271,18 @@ sub get_normdata_ans {
 	      if ( $ansetzung ne "" ){
 		$ansetzung .= " / ";
 	      }
+
 	      $inh = substr($rawdata,$k+2,$ulen);
+
+	      # Moegliche Indikatoren auswerten
 	      if ( substr($inh,0,1) eq " " ){
 		$inh =~ s/^ //;
 	      }
-	      else {
-		$inh = "(" . substr($inh,0,1) . ")" . substr($inh,1);
-	      }
+#	      else {
+#		$inh = "(" . substr($inh,0,1) . ")" . substr($inh,1);
+#	      }
+
+
 	      $ansetzung .= $inh;
 	    }
 	    $ukat++;
@@ -287,17 +295,20 @@ sub get_normdata_ans {
 	}
       }
       
-      if ( length($inh) == 4 ){
+
+      # Analyse bzgl. des zugeh"origen Inhalts des Titelsatzes
+      if ( length($titinh) == 4 ){
 	# Einfacher Inhalt ohne Bezeichner
 	$inh = $ansetzung;
       }
       else {
 	# Zusaetzlicher Bezeichner ala [Bearb.] etc. muss nachgestellt
 	# werden
-	$inh = $ansetzung . substr($inh,4);
+	$inh = $ansetzung . substr($titinh,4);
       }
     }
   }
+
   return $inh;
 }
 
