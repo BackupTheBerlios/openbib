@@ -4,7 +4,7 @@
 #
 #  OLWS::Sisis::Circulation
 #
-#  Dieses File ist (C) 2005 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2005-2006 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der
@@ -798,6 +798,36 @@ sub get_borrows {
     $ausleihliste[$i]{EJahr}=$ejahr;
   }
   
+  return \@ausleihliste;
+}
+
+# Aktive Ausleihen
+
+sub get_idn_of_borrows {
+  
+  my ($class, $username, $password, $database) = @_;
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
+  
+  #####################################################################
+  # Verbindung zur SQL-Datenbank herstellen
+  
+  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
+  
+  my $result=$dbh->prepare("select d01katkey from $database.sisis.d01buch where d01bnr = ? ");
+  $result->execute($username) or $logger->error_die($DBI::errstr);
+  
+  my @ausleihliste=();
+  
+  while (my $res=$result->fetchrow_hashref()){
+    
+    my $katkey=$res->{'d01katkey'};
+    
+    push @ausleihliste, $katkey;
+  }
+    
   return \@ausleihliste;
 }
 
