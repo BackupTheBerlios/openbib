@@ -4,7 +4,7 @@
 #
 #  OLWS::Dispatch
 #
-#  Dieses File ist (C) 2005 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2005-2006 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der
@@ -46,6 +46,7 @@ use SOAP::Transport::HTTP;
 
 my $server = SOAP::Transport::HTTP::Apache
   -> dispatch_with({
+                     'urn:/Aquisition'     => 'OLWS::Sisis::Aquisition',
                      'urn:/Authentication' => 'OLWS::Sisis::Authentication',
                      'urn:/Circulation'    => 'OLWS::Sisis::Circulation',
                      'urn:/Media'          => 'OLWS::Sisis::Media',
