@@ -74,7 +74,7 @@ sub get_mediastatus {
     $abteilung{$res->{'d60zweig'}}{$res->{'d60abt'}}=$res->{'d60bezeich'};
   }
   
-  $result=$dbh->prepare("select d01ort,d01entl,d01mtyp,d01ex,d01status,d01rv,d01abtlg,d01zweig from $database.sisis.d01buch where d01katkey = ?");
+  $result=$dbh->prepare("select d01ort,d01entl,d01mtyp,d01ex,d01status,d01skond,d01rv,d01abtlg,d01zweig,d01bnr from $database.sisis.d01buch where d01katkey = ?");
   $result->execute($katkey) or $logger->error_die($DBI::errstr);;
   
   my @exemplarliste=();
@@ -84,8 +84,10 @@ sub get_mediastatus {
     my $rueckgabe=$res->{'d01rv'};
     my $entl=$res->{'d01entl'};
     my $status=$res->{'d01status'};
+    my $skond=$res->{'d01skond'};
     my $standort=$res->{'d01abtlg'};
     my $mtyp=$res->{'d01mtyp'};
+    my $bnr=$res->{'d01bnr'};
     my $zweignr=$res->{'d01zweig'};
     my $zweigst="";
     
@@ -101,7 +103,7 @@ sub get_mediastatus {
       $status="bestellbar";
     }
     elsif ($status eq "2"){
-      $status="bestellt";
+      $status="entliehen"; # Sonderwunsch. Eigentlich: bestellt
     }
     elsif ($status eq "4"){
       $status="entliehen";
@@ -110,23 +112,58 @@ sub get_mediastatus {
       $status="unbekannt";
     }
 
+    # Sonderkonditionen
+
+    if ($skond eq "16"){
+      $status="verloren";
+    }
+    elsif ($skond eq "32"){
+      $status="vermi&szlig;t";
+    }
+
     if ($zweignr == 0){    
       if ($signatur=~/^19A/ || $signatur=~/^2\dA/ || $signatur=~/3[0-3]A/){
         if ($status eq "bestellbar"){
-	  $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/sab.html\" target=\"_blank\">SAB</a> / ausleihbar";
+	  $status="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/sab/index_ger.html\" target=\"_blank\">SAB</a> / ausleihbar";
         }
         else {
-	  $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/sab.html\" target=\"_blank\">SAB</a> / vormerkbar";
+	  $status="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/sab/index_ger.html\" target=\"_blank\">SAB</a> / vormerkbar";
         }
       }
     
       if ($standort=~/Lehrbuchsammlung/){
-        $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/lbs.html\" target=\"_blank\">LBS</a> / ausleihbar";
+        if ($status eq "bestellbar"){
+          $status="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/lbs/index_ger.html\" target=\"_blank\">LBS</a> / ausleihbar";
+        }
+        else {
+          $status="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/lbs/index_ger.html\" target=\"_blank\">LBS</a> / entliehen";
+        }
       }
       elsif ($standort=~/Lesesaal/){
-        $status="<a href=\"http://www.ub.uni-koeln.de/ub/Abteilungen/ortsleih/infoblat/lesesaal.html\" target=\"_blank\">LS</a> / Pr&auml;senzbestand";
+        $status="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/ls/index_ger.html\" target=\"_blank\">LS</a> / Pr&auml;senzbestand";
       }
     
+    }
+    elsif ($zweignr == 4){    
+      if ($standort=~/Lehrbuchsammlung/){
+        if ($status eq "bestellbar"){
+           $status="<a href=\"http://www.ub.uni-koeln.de/bibliothek/kontakt/zeiten/index_ger.html#e1693\" target=\"_blank\">LBS</a> / ausleihbar";
+        }
+        else {
+           $status="<a href=\"http://www.ub.uni-koeln.de/bibliothek/kontakt/zeiten/index_ger.html#e1693\" target=\"_blank\">LBS</a> / entliehen";
+        }
+      }
+      elsif ($standort=~/Lesesaal/){
+        $status="LS / Pr&auml;senzbestand";
+      }
+    }
+
+    # Spezielle Enleiher
+
+    # EDZ
+    if ($bnr eq "D00000572#H"){
+        $status="<a href=\"http://www.ub.uni-koeln.de/edz/content/index_ger.html\" target=\"_blank\">EDZ</a> / einsehbar";
+        $standort="EDZ";
     }
 
     $rueckgabe=~s/12:00AM//;
