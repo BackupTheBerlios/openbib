@@ -74,23 +74,26 @@ sub get_mediastatus {
     $abteilung{$res->{'d60zweig'}}{$res->{'d60abt'}}=$res->{'d60bezeich'};
   }
   
-  $result=$dbh->prepare("select d01ort,d01entl,d01mtyp,d01ex,d01status,d01skond,d01rv,d01abtlg,d01zweig,d01bnr from $database.sisis.d01buch where d01katkey = ?");
+  $result=$dbh->prepare("select d01gsi,d01ort,d01entl,d01mtyp,d01ex,d01status,d01skond,d01rv,d01abtlg,d01zweig,d01bnr from $database.sisis.d01buch where d01katkey = ?");
   $result->execute($katkey) or $logger->error_die($DBI::errstr);;
   
   my @exemplarliste=();
   while (my $res=$result->fetchrow_hashref()){
-    my $signatur=$res->{'d01ort'};
-    my $exemplar=$res->{'d01ex'};
-    my $rueckgabe=$res->{'d01rv'};
-    my $entl=$res->{'d01entl'};
-    my $status=$res->{'d01status'};
-    my $skond=$res->{'d01skond'};
-    my $standort=$res->{'d01abtlg'};
-    my $mtyp=$res->{'d01mtyp'};
-    my $bnr=$res->{'d01bnr'};
-    my $zweignr=$res->{'d01zweig'};
-    my $zweigst="";
-    
+    my $mediennr  = $res->{'d01gsi'};
+    my $signatur  = $res->{'d01ort'};
+    my $exemplar  = $res->{'d01ex'};
+    my $rueckgabe = $res->{'d01rv'};
+    my $entl      = $res->{'d01entl'};
+    my $status    = $res->{'d01status'};
+    my $skond     = $res->{'d01skond'};
+    my $standort  = $res->{'d01abtlg'};
+    my $mtyp      = $res->{'d01mtyp'};
+    my $bnr       = $res->{'d01bnr'};
+    my $zweignr   = $res->{'d01zweig'};
+    my $zweigst   = "";
+
+    my $statusstring="";
+
     if ($abteilung{"$zweignr"}{"$standort"}){
       $standort=$abteilung{"$zweignr"}{"$standort"};
     }
@@ -100,61 +103,61 @@ sub get_mediastatus {
     }
     
     if ($status eq "0"){
-      $status="bestellbar";
+      $statusstring="bestellbar";
     }
     elsif ($status eq "2"){
-      $status="entliehen"; # Sonderwunsch. Eigentlich: bestellt
+      $statusstring="entliehen"; # Sonderwunsch. Eigentlich: bestellt
     }
     elsif ($status eq "4"){
-      $status="entliehen";
+      $statusstring="entliehen";
     }
     else {
-      $status="unbekannt";
+      $statusstring="unbekannt";
     }
 
     # Sonderkonditionen
 
     if ($skond eq "16"){
-      $status="verloren";
+      $statusstring="verloren";
     }
     elsif ($skond eq "32"){
-      $status="vermi&szlig;t";
+      $statusstring="vermi&szlig;t";
     }
 
     if ($zweignr == 0){    
       if ($signatur=~/^19A/ || $signatur=~/^2\dA/ || $signatur=~/3[0-3]A/){
-        if ($status eq "bestellbar"){
-	  $status="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/sab/index_ger.html\" target=\"_blank\">SAB</a> / ausleihbar";
+        if ($statusstring eq "bestellbar"){
+	  $statusstring="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/sab/index_ger.html\" target=\"_blank\">SAB</a> / ausleihbar";
         }
         else {
-	  $status="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/sab/index_ger.html\" target=\"_blank\">SAB</a> / vormerkbar";
+	  $statusstring="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/sab/index_ger.html\" target=\"_blank\">SAB</a> / vormerkbar";
         }
       }
     
       if ($standort=~/Lehrbuchsammlung/){
-        if ($status eq "bestellbar"){
-          $status="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/lbs/index_ger.html\" target=\"_blank\">LBS</a> / ausleihbar";
+        if ($statusstring eq "bestellbar"){
+          $statusstring="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/lbs/index_ger.html\" target=\"_blank\">LBS</a> / ausleihbar";
         }
         else {
-          $status="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/lbs/index_ger.html\" target=\"_blank\">LBS</a> / entliehen";
+          $statusstring="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/lbs/index_ger.html\" target=\"_blank\">LBS</a> / entliehen";
         }
       }
       elsif ($standort=~/Lesesaal/){
-        $status="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/ls/index_ger.html\" target=\"_blank\">LS</a> / Pr&auml;senzbestand";
+        $statusstring="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/ls/index_ger.html\" target=\"_blank\">LS</a> / Pr&auml;senzbestand";
       }
     
     }
     elsif ($zweignr == 4){    
       if ($standort=~/Lehrbuchsammlung/){
-        if ($status eq "bestellbar"){
-           $status="<a href=\"http://www.ub.uni-koeln.de/bibliothek/kontakt/zeiten/index_ger.html#e1693\" target=\"_blank\">LBS</a> / ausleihbar";
+        if ($statusstring eq "bestellbar"){
+           $statusstring="<a href=\"http://www.ub.uni-koeln.de/bibliothek/kontakt/zeiten/index_ger.html#e1693\" target=\"_blank\">LBS</a> / ausleihbar";
         }
         else {
-           $status="<a href=\"http://www.ub.uni-koeln.de/bibliothek/kontakt/zeiten/index_ger.html#e1693\" target=\"_blank\">LBS</a> / entliehen";
+           $statusstring="<a href=\"http://www.ub.uni-koeln.de/bibliothek/kontakt/zeiten/index_ger.html#e1693\" target=\"_blank\">LBS</a> / entliehen";
         }
       }
       elsif ($standort=~/Lesesaal/){
-        $status="LS / Pr&auml;senzbestand";
+        $statusstring="LS / Pr&auml;senzbestand";
       }
     }
 
@@ -162,7 +165,7 @@ sub get_mediastatus {
 
     # EDZ
     if ($bnr eq "D00000572#H"){
-        $status="<a href=\"http://www.ub.uni-koeln.de/edz/content/index_ger.html\" target=\"_blank\">EDZ</a> / einsehbar";
+        $statusstring="<a href=\"http://www.ub.uni-koeln.de/edz/content/index_ger.html\" target=\"_blank\">EDZ</a> / einsehbar";
         $standort="EDZ";
     }
 
@@ -171,11 +174,14 @@ sub get_mediastatus {
     $standort="-" unless ($standort);
     
     my $singleex={
-		  Signatur => $signatur,
-		  Exemplar => $exemplar,
-		  Standort => $standort,
-		  Status => $status,	
-		  Rueckgabe => $rueckgabe,
+                  Mediennr    => $mediennr,
+                  Zweigstelle => $zweignr,
+		  Signatur    => $signatur,
+		  Exemplar    => $exemplar,
+		  Standort    => $standort,
+		  Status      => $statusstring,
+                  Statuscode  => $status,	
+		  Rueckgabe   => $rueckgabe,
 		 };
     
     push @exemplarliste, $singleex;
