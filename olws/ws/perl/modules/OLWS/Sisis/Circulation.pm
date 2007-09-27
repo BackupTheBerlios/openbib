@@ -4,7 +4,7 @@
 #
 #  OLWS::Sisis::Circulation
 #
-#  Dieses File ist (C) 2005-2006 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2005-2007 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der
@@ -36,6 +36,8 @@ use DBI;
 
 use OLWS::Sisis::Data;
 use OLWS::Sisis::Config;
+use OLWS::Common::SLNP::Loan;
+use OLWS::Common::Utils;
 
 # Importieren der Konfigurationsdaten als Globale Variablen
 # in diesem Namespace
@@ -43,6 +45,30 @@ use OLWS::Sisis::Config;
 use vars qw(%config);
 
 *config=\%OLWS::Sisis::Config::config;
+
+sub new {
+    my ($class,$database) = @_;
+
+    # Log4perl logger erzeugen
+    my $logger = get_logger();
+
+    my $config = new OLWS::Sisis::Config();
+    
+    my $self = { };
+
+    bless ($self, $class);
+
+    # Verbindung zur SQL-Datenbank herstellen
+    my $dbh
+        = DBI->connect("DBI:$config->{dbimodule}:dbname=$database;server=$config->{dbserver};host=$config->{dbhost};port=$config->{dbport}", $config->{dbuser}, $config->{dbpasswd})
+            or $logger->error($DBI::errstr);
+
+    $self->{dbh}       = $dbh;
+
+    $self->{sikfstab}  = OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
+
+    return $self;
+}
 
 # Verlaengerungen
 
@@ -54,294 +80,127 @@ sub get_renewals {
 # Bestellungen
 
 sub get_orders {
-  my ($class, $username, $password, $database) = @_;
+  my ($self, $args_ref) = @_;
+
+  my $username = $args_ref->{username};
+  my $password = $args_ref->{password};
+  my $database = $args_ref->{database};
   
   # Log4perl logger erzeugen
   
   my $logger = get_logger();
   
-  my %monthtab=(
-		Jan => '01',
-		Feb => '02',
-		Mar => '03',
-		Apr => '04',
-		May => '05',
-		Jun => '06',
-		Jul => '07',
-		Aug => '08',
-		Sep => '09',
-		Oct => '10',
-		Nov => '11',
-		Dec => '12',
-	       );
+  my $request=$self->{dbh}->prepare("select d01gsi,d01ort,d01ex,d01av,d01rv,d01aufnahme,d01katkey,d01mtyp,d01skond from $database.sisis.d01buch where d01bnr = ? and d01status = 2 order by d01rv asc");
   
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
+  $request->execute($username) or $logger->error_die($DBI::errstr);
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
+  my $skond_map_ref = {
+    0     => 'bestellt',                # kein Sonderstatus
+    1     => 'Vormerkung priv. Gruppe',
+    2     => 'Besondere Leihfrist',
+    4     => 'Ausleihe mit Medienparameter',
+    16    => 'verlustgebucht',
+    64    => 'abholbar',
+    128   => 'PFL auf R&uuml;ckversand',
+    256   => 'Geb&uuml;hren u. Mahnungen vorhanden',
+    512   => 'Mahnung ohne Geb&uuml;hr vorhanden',
+    1024  => 'PFL wurde sondiert',
+    2048  => 'r&uuml;ckgefordert wg. Benutzersperre',
+    4096  => 'aktuelle Geb&uuml;hren vorhanden',
+    8192  => 'bestellt', # Magazinbestellung
+    16384 => 'offene OPAC PFL-Bestellung',
+    32748 => 'abgesagte PFL-Bestellung',
+  };  
+
+  my @orderlist=();
   
-  my $result=$dbh->prepare("select d01gsi,d01ort,d01ex,d01av,d01rv,d01aufnahme,d01katkey,d01mtyp,d01skond from $database.sisis.d01buch where d01bnr = ? and d01status = 2 order by d01rv asc");
-  
-  $result->execute($username) or $logger->error_die($DBI::errstr);
-  
-  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
-  
-  my @bestellliste=();
-  
-  while (my $res=$result->fetchrow_hashref()){
+  while (my $res=$request->fetchrow_hashref()){
     
-    my $katkey=$res->{'d01katkey'};
-    
-    my $mtyp=$res->{'d01mtyp'};
-    my $skond=$res->{'d01skond'};
-    
-    # kein Status    
-    if ($skond == 0){
-      $skond="bestellt";
-    }	
-    # Vormerkung priv. Gruppe
-    elsif ($skond == 1){
-      $skond="Vormerkung priv. Gruppe";
-    }	
-    # Besondere Leihfrist
-    elsif ($skond == 2){
-      $skond="Besondere Leihfrist";
-    }	
-    # Ausleihe mit Medienparameter
-    elsif ($skond == 4){
-      $skond="Ausleihe mit Medienparameter";
-    }	
-    # verlustgebucht
-    elsif ($skond == 16){
-      $skond="verlustgebucht";
-    }	
-    # PFL eingangsverbucht
-    elsif ($skond == 64 ){
-      $skond="abholbar";
-    }	
-    # PFL auf R&uuml;ckversand
-    elsif ($skond == 128 ){
-      $skond="PFL auf R&uuml;ckversand";
-    }	
-    # Geb&uuml;hren u. Mahnungen vorhanden
-    elsif ($skond == 256 ){
-      $skond="Geb&uuml;hren u. Mahnungen vorhanden";
-    }	
-    # Mahnung ohne Geb&uuml;hr vorhanden
-    elsif ($skond == 512){
-      $skond="Mahnung ohne Geb&uuml;hr vorhanden";
-    }	
-    # PFL wurde sondiert
-    elsif ($skond == 1024){
-      $skond="PFL wurde sondiert";
-    }	
-    # r&uuml;ckgefordert wg. Benutzersperre
-    elsif ($skond == 2048){
-      $skond="r&uuml;ckgefordert wg. Benutzersperre";
-    }	
-    # aktuelle Geb&uuml;hren vorhanden
-    elsif ($skond == 4096){
-      $skond="aktuelle Geb&uuml;hren vorhanden";
-    }	
-    # Magazinbestellung
-    elsif ($skond == 8192){
-      $skond="bestellt";
-    }	
-    # offene OPAC PFL-Bestellung
-    elsif ($skond == 16384){
-      $skond="offene OPAC PFL-Bestellung";
-    }	
-    # abgesagte PFL-Bestellung
-    elsif ($skond == 32748){
-      $skond="abgesagte PFL-Bestellung";
-    }	
-    else {
-      $skond="unbekannt";
-    }	
-    
-    my ($month,$day,$year)=$res->{'d01aufnahme'}=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
-    $day=~s/^(\d)$/0$1/;
-    $month=~s/^(\d)$/0$1/;
-    my $bestelldatumpfl=$day.".".$monthtab{$month}.".".$year;
-    
-    ($month,$day,$year)=$res->{'d01av'}=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
-    $day=~s/^(\d)$/0$1/;
-    $month=~s/^(\d)$/0$1/;
-    my $bestelldatum=$day.".".$monthtab{$month}.".".$year;
+    my $katkey          = $res->{'d01katkey'};
+    my $mtyp            = $res->{'d01mtyp'};
+    my $skond           = (exists $skond_map_ref->{$res->{'d01skond'}})?$skond_map_ref->{$res->{'d01skond'}}:'unbekannt';
+    my $bestelldatumpfl = OLWS::Common::Utils::conv_date($res->{'d01aufnahme'});
+    my $bestelldatum    = OLWS::Common::Utils::conv_date($res->{'d01av'});
     
     if ($mtyp eq "99"){
       $bestelldatum=$bestelldatumpfl;
     }
     
-    my $signatur=$res->{'d01ort'};
+    my $signatur        = $res->{'d01ort'};
     
     if ($res->{'d01ex'}){
       $signatur=$signatur.$res->{'d01ex'};
     }
     
-    my $mediennummer=$res->{'d01gsi'};
-    
-    my $singlebestellung={
-			  Katkey          => $katkey,
-			  Signatur        => $signatur,
-			  MTyp            => $mtyp,
-			  Status          => $skond,
-			  Mediennummer    => $mediennummer,
-			  BestellDatum    => $bestelldatum,
-			 };
-    
-    
-    push @bestellliste, $singlebestellung;
-  }
-  
-  for (my $i=0;$i<=$#bestellliste;$i++){
-    my $katkey=$bestellliste[$i]{Katkey};
-    my $mtyp=$bestellliste[$i]{MTyp};
-    
-    
-    my $titelref=undef;
-    
-    if ($mtyp eq "99"){
-      $titelref=OLWS::Sisis::Data::get_titzfl_by_katkey($dbh,$database,$katkey);
-    }
-    else {
-      $titelref=OLWS::Sisis::Data::get_titdupref_by_katkey($dbh,$database,$katkey);
-      
-      unless (defined($titelref)){
-        $titelref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$katkey);
-      }
-    }
-    
-    my %titel=%$titelref;
-    
-    my @verfasserkat=(
-                      '0100.001',
-                      '0100.002',
-                      '0100.003',
-                      '0101.001',
-                      '0101.002',
-                      '0101.003',
-                      '0101.004',
-                      '0200.001',
-                      '0200.002',
-                      '0200.003',
-                      '0201.001',
-                      '0201.002',
-                      '0201.003',
-                     );
+    my $mediennummer    = $res->{'d01gsi'};
 
-    my @verfasserarray=();
+    my $title_ref = get_short_title({
+	katkey   => $katkey,
+	mtyp     => $mtyp,
+	dbh      => $self->{dbh},
+	database => $database,
+	sikfstab => $self->{sikfstab},
+	});
     
-    foreach my $kat (@verfasserkat){    
-      push @verfasserarray, $titel{$kat} if ($titel{$kat});
-    }
+    my $singleorder_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
+		SOAP::Data->name(Katkey          => $katkey)->type('string'),
+		SOAP::Data->name(Verfasser       => $title_ref->{Verfasser})->type('string'),
+		SOAP::Data->name(Titel           => $title_ref->{Titel})->type('string'),
+		SOAP::Data->name(EJahr           => $title_ref->{EJahr})->type('string'),
+#		SOAP::Data->name(Signatur        => $signatur)->type('string'),
+#		SOAP::Data->name(MTyp            => $mtyp)->type('string'),
+		SOAP::Data->name(Mediennummer    => $mediennummer)->type('string'),
+		SOAP::Data->name(BestellDatum    => $bestelldatum)->type('string'),
+		SOAP::Data->name(Status          => $skond)->type('string'),
+       ));
     
-    my $verfasser=join(" ; ",@verfasserarray);
-    
-    my $hst="";
-    if ($titel{'0331.001'}){
-      $hst=$titel{'0331.001'};
-    }
-    elsif ($titel{'0331.002'}){
-      $hst=$titel{'0331.002'};
-    }
-    elsif ($titel{'0089.001'}){
-      $hst=$titel{'0089.001'};
-      if ($titel{'0451.001'}){
-	$hst=$titel{'0451.001'}." / ".$hst;
-      }
-      elsif ($titel{'0451.002'}){
-	$hst=$titel{'0451.002'}." / ".$hst;
-      }
-      elsif ($titel{'0451.003'}){
-	$hst=$titel{'0451.003'}." / ".$hst;
-      }
-      else {
-	
-	# Jetzt versuchen wir es beim uebergeordneten Titel
-	
-	my $titelgtfref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$titel{'0004.001'});
-	
-	my %titelgtf=%$titelgtfref;
-	
-	if ($titelgtf{'0331.001'}){
-	  $hst=$titelgtf{'0331.001'}." / ".$hst;
-	}
-	elsif ($titelgtf{'0331.002'}){
-	  $hst=$titelgtf{'0331.002'}." / ".$hst;
-	}
-	my @verfassergtfarray=();
-	if (!$verfasser){
-	  foreach my $kat (@verfasserkat){    
-	    push @verfassergtfarray, $titelgtf{$kat} if ($titelgtf{$kat});
-	  }
-	  
-	  $verfasser=join(" ; ",@verfassergtfarray);
-	}
-      } 
-    }
-    
-    my $ejahr=$titel{'0425.001'};
-    
-    $bestellliste[$i]{Verfasser}=$verfasser;
-    $bestellliste[$i]{Titel}=$hst;
-    $bestellliste[$i]{EJahr}=$ejahr;
+    push @orderlist, $singleorder_ref;    
   }
-  
-  return \@bestellliste;
+
+  return SOAP::Data->name(OrderList  => SOAP::Data->value(\@orderlist));
 }
 
 
 # Vormerkungen
 
 sub get_reservations {
-  my ($class, $username, $password, $database) = @_;
+  my ($self, $args_ref) = @_;
+
+  my $username = $args_ref->{username};
+  my $password = $args_ref->{password};
+  my $database = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
   
-  my %monthtab=(
-		Jan => '01',
-		Feb => '02',
-		Mar => '03',
-		Apr => '04',
-		May => '05',
-		Jun => '06',
-		Jul => '07',
-		Aug => '08',
-		Sep => '09',
-		Oct => '10',
-		Nov => '11',
-		Dec => '12',
-	       );
+  my $request=$self->{dbh}->prepare("select * from $database.sisis.d04vorm where d04bnr = ?");
+  $request->execute($username) or $logger->error_die($DBI::errstr);
   
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
+  my @reservationlist=();
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
-  
-  my $result=$dbh->prepare("select * from $database.sisis.d04vorm where d04bnr = ?");
-  $result->execute($username) or $logger->error_die($DBI::errstr);
-  
-  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
-  
-  my @vormerkliste=();
-  
-  while (my $res=$result->fetchrow_hashref()){
+  while (my $res=$request->fetchrow_hashref()){
     
     my $katkey=$res->{'d04katkey'};
+
+    my $title_ref = get_short_title({
+	katkey   => $katkey,
+	mtyp     => '',
+	dbh      => $self->{dbh},
+	database => $database,
+	sikfstab => $self->{sikfstab},
+	});
     
     my $stelle=-1;
 
-    my $result2=$dbh->prepare("select * from $database.sisis.d04vorm where d04katkey = ? order by d04vmnr");
-    $result2->execute($katkey) or $logger->error_die($DBI::errstr);
+    my $request2=$self->{dbh}->prepare("select * from $database.sisis.d04vorm where d04katkey = ? order by d04vmnr");
+    $request2->execute($katkey) or $logger->error_die($DBI::errstr);
 
     my $counter=1;
 
-    while (my $res2=$result2->fetchrow_hashref()){
+    while (my $res2=$request2->fetchrow_hashref()){
 
-      my $bnr=$res2->{'d04bnr'};
+      my $bnr = $res2->{'d04bnr'};
 
       if ($bnr eq $username){
         $stelle=$counter;
@@ -351,379 +210,227 @@ sub get_reservations {
       $counter++;
     }
 
-    my ($month,$day,$year)=$res->{'d04vmdatum'}=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
-    $day=~s/^(\d)$/0$1/;
-    $month=~s/^(\d)$/0$1/;
-    my $vormerkdatum=$day.".".$monthtab{$month}.".".$year;
+    my $vormerkdatum  = OLWS::Common::Utils::conv_date($res->{'d04vmdatum'});
+    my $aufrechtdatum = OLWS::Common::Utils::conv_date($res->{'d04aufrecht'});
+    my $mediennummer  = $res->{'d04gsi'};
     
-    ($month, $day,$year)=$res->{'d04aufrecht'}=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
-    $day=~s/^(\d)$/0$1/;
-    $month=~s/^(\d)$/0$1/;
-    my $aufrechtdatum=$day.".".$monthtab{$month}.".".$year;
+    my $singlereservation_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
+		SOAP::Data->name(Katkey          => $katkey)->type('string'),
+		SOAP::Data->name(Verfasser       => $title_ref->{Verfasser})->type('string'),
+		SOAP::Data->name(Titel           => $title_ref->{Titel})->type('string'),
+		SOAP::Data->name(EJahr           => $title_ref->{EJahr})->type('string'),
+#		SOAP::Data->name(Signatur        => $signatur)->type('string'),
+#		SOAP::Data->name(MTyp            => $mtyp)->type('string'),
+		SOAP::Data->name(Mediennummer    => $mediennummer)->type('string'),
+		SOAP::Data->name(VormerkDatum    => $vormerkdatum)->type('string'),
+		SOAP::Data->name(AufrechtDatum   => $aufrechtdatum)->type('string'),
+		SOAP::Data->name(Stelle          => $stelle)->type('int'),	));
     
-    my $mediennummer=$res->{'d04gsi'};
-    
-    my $singlevormerkung={
-			  Katkey          => $katkey,
-			  Mediennummer    => $mediennummer,
-			  VormerkDatum    => $vormerkdatum,
-			  AufrechtDatum   => $aufrechtdatum,
-			  Stelle          => $stelle,
-			 };
-    
-    push @vormerkliste, $singlevormerkung;
+    push @reservationlist, $singlereservation_ref;    
   }
-  
-  for (my $i=0;$i<=$#vormerkliste;$i++){
-    my $katkey=$vormerkliste[$i]{Katkey};
-    
-    
-    my $titelref=undef;
-    
-    $titelref=OLWS::Sisis::Data::get_titdupref_by_katkey($dbh,$database,$katkey);
-    
-    unless (defined($titelref)){
-      $titelref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$katkey);
-    }
-    
-    my %titel=%$titelref;
-    
-    my @verfasserkat=(
-                      '0100.001',
-                      '0100.002',
-                      '0100.003',
-                      '0101.001',
-                      '0101.002',
-                      '0101.003',
-                      '0101.004',
-                      '0200.001',
-                      '0200.002',
-                      '0200.003',
-                      '0201.001',
-                      '0201.002',
-                      '0201.003',
-                     );
 
-    my @verfasserarray=();
-    
-    foreach my $kat (@verfasserkat){    
-      push @verfasserarray, $titel{$kat} if ($titel{$kat});
-    }
-    
-    my $verfasser=join(" ; ",@verfasserarray);
-    
-    my $hst="";
-    if ($titel{'0331.001'}){
-      $hst=$titel{'0331.001'};
-    }
-    elsif ($titel{'0331.002'}){
-      $hst=$titel{'0331.002'};
-    }
-    elsif ($titel{'0089.001'}){
-      $hst=$titel{'0089.001'};
-      if ($titel{'0451.001'}){
-	$hst=$titel{'0451.001'}." / ".$hst;
-      }
-      elsif ($titel{'0451.002'}){
-	$hst=$titel{'0451.002'}." / ".$hst;
-      }
-      elsif ($titel{'0451.003'}){
-	$hst=$titel{'0451.003'}." / ".$hst;
-      }
-      else {
-	
-	# Jetzt versuchen wir es beim uebergeordneten Titel
-	
-	my $titelgtfref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$titel{'0004.001'});
-	
-	my %titelgtf=%$titelgtfref;
-	
-	if ($titelgtf{'0331.001'}){
-	  $hst=$titelgtf{'0331.001'}." / ".$hst;
-	}
-	elsif ($titelgtf{'0331.002'}){
-	  $hst=$titelgtf{'0331.002'}." / ".$hst;
-	}
-	my @verfassergtfarray=();
-	if (!$verfasser){
-	  foreach my $kat (@verfasserkat){    
-	    push @verfassergtfarray, $titelgtf{$kat} if ($titelgtf{$kat});
-	  }
-	  
-	  $verfasser=join(" ; ",@verfassergtfarray);
-	}
-      } 
-    }
-    
-    my $ejahr=$titel{'0425.001'};
-    
-    $vormerkliste[$i]{Verfasser}=$verfasser;
-    $vormerkliste[$i]{Titel}=$hst;
-    $vormerkliste[$i]{EJahr}=$ejahr;
-  }
-  
-  return \@vormerkliste;
+  return SOAP::Data->name(ReservationList  => SOAP::Data->value(\@reservationlist));
+
 }
 
 # Mahnungen
 
 sub get_reminders {
-  my ($class, $username, $password, $database) = @_;
+  my ($self, $args_ref) = @_;
+
+  my $username = $args_ref->{username};
+  my $password = $args_ref->{password};
+  my $database = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
   
-  my %monthtab=(
-		Jan => '01',
-		Feb => '02',
-		Mar => '03',
-		Apr => '04',
-		May => '05',
-		Jun => '06',
-		Jul => '07',
-		Aug => '08',
-		Sep => '09',
-		Oct => '10',
-		Nov => '11',
-		Dec => '12',
-	       );
+  my $request=$self->{dbh}->prepare("select * from $database.sisis.d03geb where d03bnr = ? and d03stat != 4128");
+  $request->execute($username) or $logger->error_die($DBI::errstr);
   
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
+  my @reminderlist=();
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
-  
-  my $result=$dbh->prepare("select * from $database.sisis.d03geb where d03bnr = ? and d03stat != 4128");
-  $result->execute($username) or $logger->error_die($DBI::errstr);
-  
-  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
-  
-  my @mahnungsliste=();
-  
-  while (my $res=$result->fetchrow_hashref()){
+  while (my $res=$request->fetchrow_hashref()){
     
-    my $katkey=$res->{'d03katkey'};
+    my $katkey          = $res->{'d03katkey'};
     
-    my $saeumnisgebuehr=$res->{'d03gebu'};
-    my $mahngebuehr=$res->{'d03mahn'};
-    my $mtyp=$res->{'d03mtyp'};
-    
-    my ($month,$day,$year)=$res->{'d03von'}=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
-    $day=~s/^(\d)$/0$1/;
-    $month=~s/^(\d)$/0$1/;
-    my $ausleihdatum=$day.".".$monthtab{$month}.".".$year;
-    
-    ($month, $day,$year)=$res->{'d03lfe'}=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
-    $day=~s/^(\d)$/0$1/;
-    $month=~s/^(\d)$/0$1/;
-    my $leihfristende=$day.".".$monthtab{$month}.".".$year;
+    my $saeumnisgebuehr = $res->{'d03gebu'};
+    my $mahngebuehr     = $res->{'d03mahn'};
+    my $mtyp            = $res->{'d03mtyp'};
+
+    my $ausleihdatum    = OLWS::Common::Utils::conv_date($res->{'d03von'});
+    my $leihfristende   = OLWS::Common::Utils::conv_date($res->{'d03lfe'});
 
     if ($mtyp == 99){
       $leihfristende="-";
     }
     
-    my $mediennummer=$res->{'d03gsi'};
+    my $mediennummer    = $res->{'d03gsi'};
+
+    my $title_ref = get_short_title({
+	katkey   => $katkey,
+	mtyp     => $mtyp,
+	dbh      => $self->{dbh},
+	database => $database,
+	sikfstab => $self->{sikfstab},
+	});
+
+    my $singlereminder_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
+		SOAP::Data->name(Katkey          => $katkey)->type('string'),
+		SOAP::Data->name(Verfasser       => $title_ref->{Verfasser})->type('string'),
+		SOAP::Data->name(Titel           => $title_ref->{Titel})->type('string'),
+		SOAP::Data->name(EJahr           => $title_ref->{EJahr})->type('string'),
+#		SOAP::Data->name(Signatur        => $signatur)->type('string'),
+		SOAP::Data->name(MTyp            => $mtyp)->type('string'),
+		SOAP::Data->name(Mediennummer    => $mediennummer)->type('string'),
+		SOAP::Data->name(AusleihDatum    => $ausleihdatum)->type('string'),
+		SOAP::Data->name(Leihfristende   => $leihfristende)->type('string'),
+		SOAP::Data->name(Mahngebuehr     => $mahngebuehr)->type('string'),
+		SOAP::Data->name(Saeumnisgebuehr => $saeumnisgebuehr)->type('string'),	));
     
-    my $singlemahnung={
-		       Katkey          => $katkey,
-		       Mediennummer    => $mediennummer,
-		       MTyp            => $mtyp,
-		       AusleihDatum    => $ausleihdatum,
-		       Leihfristende   => $leihfristende,
-		       Mahngebuehr     => $mahngebuehr,
-		       Saeumnisgebuehr => $saeumnisgebuehr,
-		      };
-    
-    push @mahnungsliste, $singlemahnung;
+    push @reminderlist, $singlereminder_ref;
   }
-  
-  for (my $i=0;$i<=$#mahnungsliste;$i++){
-    my $katkey=$mahnungsliste[$i]{Katkey};
-    my $mtyp=$mahnungsliste[$i]{MTyp};
-        
-    my $titelref=undef;
 
-    if ($mtyp eq "99"){
-      $titelref=OLWS::Sisis::Data::get_titzfl_by_katkey($dbh,$database,$katkey);
-    }
-    else {
-      $titelref=OLWS::Sisis::Data::get_titdupref_by_katkey($dbh,$database,$katkey);
-    
-      unless (defined($titelref)){
-        $titelref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$katkey);
-      }
-    }
-
-    my %titel=%$titelref;
-    
-    my @verfasserkat=(
-                      '0100.001',
-                      '0100.002',
-                      '0100.003',
-                      '0101.001',
-                      '0101.002',
-                      '0101.003',
-                      '0101.004',
-                      '0200.001',
-                      '0200.002',
-                      '0200.003',
-                      '0201.001',
-                      '0201.002',
-                      '0201.003',
-                     );
-
-    my @verfasserarray=();
-    
-    foreach my $kat (@verfasserkat){    
-      push @verfasserarray, $titel{$kat} if ($titel{$kat});
-    }
-    
-    my $verfasser=join(" ; ",@verfasserarray);
-    
-    my $hst="";
-    if ($titel{'0331.001'}){
-      $hst=$titel{'0331.001'};
-    }
-    elsif ($titel{'0331.002'}){
-      $hst=$titel{'0331.002'};
-    }
-    elsif ($titel{'0089.001'}){
-      $hst=$titel{'0089.001'};
-      if ($titel{'0451.001'}){
-	$hst=$titel{'0451.001'}." / ".$hst;
-      }
-      elsif ($titel{'0451.002'}){
-	$hst=$titel{'0451.002'}." / ".$hst;
-      }
-      elsif ($titel{'0451.003'}){
-	$hst=$titel{'0451.003'}." / ".$hst;
-      }
-      else {
-	
-	# Jetzt versuchen wir es beim uebergeordneten Titel
-	
-	my $titelgtfref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$titel{'0004.001'});
-	
-	my %titelgtf=%$titelgtfref;
-	
-	if ($titelgtf{'0331.001'}){
-	  $hst=$titelgtf{'0331.001'}." / ".$hst;
-	}
-	elsif ($titelgtf{'0331.002'}){
-	  $hst=$titelgtf{'0331.002'}." / ".$hst;
-	}
-	my @verfassergtfarray=();
-	if (!$verfasser){
-	  foreach my $kat (@verfasserkat){    
-	    push @verfassergtfarray, $titelgtf{$kat} if ($titelgtf{$kat});
-	  }
-	  $verfasser=join(" ; ",@verfassergtfarray);
-	}
-      }
-    }
-    
-    my $ejahr=$titel{'0425.001'};
-    
-    $mahnungsliste[$i]{Verfasser}=$verfasser;
-    $mahnungsliste[$i]{Titel}=$hst;
-    $mahnungsliste[$i]{EJahr}=$ejahr;
-  }
-  
-  return \@mahnungsliste;
+  return SOAP::Data->name(ReminderList  => SOAP::Data->value(\@reminderlist));  
 }
 
 # Aktive Ausleihen
 
 sub get_borrows {
-  
-  my ($class, $username, $password, $database) = @_;
+  my ($self, $args_ref) = @_;
+
+  my $username = $args_ref->{username};
+  my $password = $args_ref->{password};
+  my $database = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
   
-  my %monthtab=(
-		Jan => '01',
-		Feb => '02',
-		Mar => '03',
-		Apr => '04',
-		May => '05',
-		Jun => '06',
-		Jul => '07',
-		Aug => '08',
-		Sep => '09',
-		Oct => '10',
-		Nov => '11',
-		Dec => '12',
-	       );
+  my $request=$self->{dbh}->prepare("select d01gsi,d01ort,d01ex,d01av,d01rv,d01katkey,d01mtyp,d01skond from $database.sisis.d01buch where d01bnr = ? and d01status = 4 order by d01rv asc");
+  $request->execute($username) or $logger->error_die($DBI::errstr);
   
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
+  my @borrowlist=();
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
-  
-  my $result=$dbh->prepare("select d01gsi,d01ort,d01ex,d01av,d01rv,d01katkey,d01mtyp,d01skond from $database.sisis.d01buch where d01bnr = ? and d01status = 4 order by d01rv asc");
-  $result->execute($username) or $logger->error_die($DBI::errstr);
-  
-  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
-  
-  my @ausleihliste=();
-  
-  while (my $res=$result->fetchrow_hashref()){
+  while (my $res=$request->fetchrow_hashref()){
     
-    my $katkey=$res->{'d01katkey'};
-    my $mtyp=$res->{'d01mtyp'};
-    
-    my ($month,$day,$year)=$res->{'d01av'}=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
-    $day=~s/^(\d)$/0$1/;
-    $month=~s/^(\d)$/0$1/;
-    my $ausleihdatum=$day.".".$monthtab{$month}.".".$year;
-    
-    ($month, $day,$year)=$res->{'d01rv'}=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
-    $day=~s/^(\d)$/0$1/;
-    $month=~s/^(\d)$/0$1/;
-    my $rueckgabedatum=$day.".".$monthtab{$month}.".".$year;
-    
-    my $signatur=$res->{'d01ort'};
+    my $katkey         = $res->{'d01katkey'};
+    my $mtyp           = $res->{'d01mtyp'};    
+    my $ausleihdatum   = OLWS::Common::Utils::conv_date($res->{'d01av'});
+    my $rueckgabedatum = OLWS::Common::Utils::conv_date($res->{'d01rv'});    
+    my $signatur       = $res->{'d01ort'};
     
     if ($res->{'d01ex'}){
       $signatur=$signatur.$res->{'d01ex'};
     }
     
-    my $mediennummer=$res->{'d01gsi'};
+    my $mediennummer   = $res->{'d01gsi'};
+
+    my $title_ref = get_short_title({
+	katkey   => $katkey,
+	mtyp     => $mtyp,
+	dbh      => $self->{dbh},
+	database => $database,
+	sikfstab => $self->{sikfstab},
+	});
     
-    my $singleausleihe={
-			Katkey          => $katkey,
-			Signatur        => $signatur,
-			MTyp            => $mtyp,
-			Mediennummer    => $mediennummer,
-			AusleihDatum    => $ausleihdatum,
-			RueckgabeDatum  => $rueckgabedatum,
-		       };
+    my $singleborrow_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
+		SOAP::Data->name(Katkey          => $katkey)->type('string'),
+		SOAP::Data->name(Verfasser       => $title_ref->{Verfasser})->type('string'),
+		SOAP::Data->name(Titel           => $title_ref->{Titel})->type('string'),
+		SOAP::Data->name(EJahr           => $title_ref->{EJahr})->type('string'),
+		SOAP::Data->name(Signatur        => $signatur)->type('string'),
+		SOAP::Data->name(MTyp            => $mtyp)->type('string'),
+		SOAP::Data->name(Mediennummer    => $mediennummer)->type('string'),
+		SOAP::Data->name(AusleihDatum    => $ausleihdatum)->type('string'),
+		SOAP::Data->name(RueckgabeDatum  => $rueckgabedatum)->type('string'),
+	));
     
-    push @ausleihliste, $singleausleihe;
+    push @borrowlist, $singleborrow_ref;
   }
   
-  for (my $i=0;$i<=$#ausleihliste;$i++){
-    my $katkey=$ausleihliste[$i]{Katkey};
-    my $mtyp=$ausleihliste[$i]{MTyp};
+  return SOAP::Data->name(BorrowList  => SOAP::Data->value(\@borrowlist));
+}
+
+# Aktive Ausleihen
+
+sub get_idn_of_borrows {
+  my ($self, $args_ref) = @_;
+
+  my $username = $args_ref->{username};
+  my $password = $args_ref->{password};
+  my $database = $args_ref->{database};
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
+  
+  my $request=$self->{dbh}->prepare("select d01katkey from $database.sisis.d01buch where d01bnr = ? ");
+  $request->execute($username) or $logger->error_die($DBI::errstr);
+  
+  my @borrowlist=();
+  
+  while (my $res=$request->fetchrow_hashref()){
     
+    my $katkey=$res->{'d01katkey'};
     
-    my $titelref=undef;
+    push @borrowlist, SOAP::Data->name(MediaItem  => \SOAP::Data->value(
+		SOAP::Data->name(Katkey          => $katkey)->type('string'),
+               	));
+  }
+
+  return SOAP::Data->name(BorrowList  => SOAP::Data->value(\@borrowlist));
+}
+
+sub make_reservation {
+  my ($class, $args_ref) = @_;
+
+  my $username     = $args_ref->{username};
+  my $password     = $args_ref->{password};
+  my $mediennummer = $args_ref->{mediennummer};
+  my $zweigstelle  = $args_ref->{zweigstelle};
+  my $ausgabeort   = $args_ref->{ausgabeort};
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
+ 
+  my $response_ref = OLWS::Common::SLNP::Loan::make_reservation($username, $mediennummer, $zweigstelle, $ausgabeort);
+
+  return $response_ref;
+}
+
+sub get_short_title {
+    my ($arg_ref) = @_;
+    
+    # Set defaults
+    my $katkey  = exists $arg_ref->{katkey}
+        ? $arg_ref->{katkey}        : undef;
+
+    my $mtyp         = exists $arg_ref->{mtyp}
+        ? $arg_ref->{mtyp}          : undef;
+    my $dbh          = exists $arg_ref->{dbh}
+        ? $arg_ref->{dbh}           : undef;
+    my $database     = exists $arg_ref->{database}
+        ? $arg_ref->{database}      : undef;
+    my $sikfstab_ref = exists $arg_ref->{sikfstab}
+        ? $arg_ref->{sikfstab}      : undef;
+    
+    my $titel_ref=undef;
 
     if ($mtyp eq "99"){
-      $titelref=OLWS::Sisis::Data::get_titzfl_by_katkey($dbh,$database,$katkey);
+      $titel_ref=OLWS::Sisis::Data::get_titzfl_by_katkey($dbh,$database,$katkey);
     }
     else {
-      $titelref=OLWS::Sisis::Data::get_titdupref_by_katkey($dbh,$database,$katkey);
+      $titel_ref=OLWS::Sisis::Data::get_titdupref_by_katkey($dbh,$database,$katkey);
     
-      unless (defined($titelref)){
-        $titelref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$katkey);
+      unless (defined($titel_ref)){
+        $titel_ref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstab_ref,$dbh,$database,$katkey);
       }
     }
     
-    my %titel=%$titelref;
+    my %titel=%$titel_ref;
     
     my @verfasserkat=(
                       '0100.001',
@@ -771,9 +478,9 @@ sub get_borrows {
 	
 	# Jetzt versuchen wir es beim uebergeordneten Titel
 	
-	my $titelgtfref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$titel{'0004.001'});
+	my $titelgtf_ref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstab_ref,$dbh,$database,$titel{'0004.001'});
 	
-	my %titelgtf=%$titelgtfref;
+	my %titelgtf=%$titelgtf_ref;
 	
 	if ($titelgtf{'0331.001'}){
 	  $hst=$titelgtf{'0331.001'}." / ".$hst;
@@ -792,43 +499,22 @@ sub get_borrows {
     }
     
     my $ejahr=$titel{'0425.001'};
-    
-    $ausleihliste[$i]{Verfasser}=$verfasser;
-    $ausleihliste[$i]{Titel}=$hst;
-    $ausleihliste[$i]{EJahr}=$ejahr;
-  }
-  
-  return \@ausleihliste;
+
+    return {
+         Verfasser => $verfasser,
+         Titel     => $hst,
+         EJahr     => $ejahr,
+    }
 }
 
-# Aktive Ausleihen
+sub DESTROY {
+    my $self = shift;
 
-sub get_idn_of_borrows {
-  
-  my ($class, $username, $password, $database) = @_;
+    return if (!defined $self->{dbh});
 
-  # Log4perl logger erzeugen
+    $self->{dbh}->disconnect();
 
-  my $logger = get_logger();
-  
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
-  
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
-  
-  my $result=$dbh->prepare("select d01katkey from $database.sisis.d01buch where d01bnr = ? ");
-  $result->execute($username) or $logger->error_die($DBI::errstr);
-  
-  my @ausleihliste=();
-  
-  while (my $res=$result->fetchrow_hashref()){
-    
-    my $katkey=$res->{'d01katkey'};
-    
-    push @ausleihliste, $katkey;
-  }
-    
-  return \@ausleihliste;
+    return;
 }
 
 1;

@@ -4,7 +4,7 @@
 #
 #  OLWS::Sisis::Authentication
 #
-#  Dieses File ist (C) 2005 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2005-2007 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der
@@ -31,9 +31,11 @@ use strict;
 use warnings;
 
 use Log::Log4perl qw(get_logger :levels);
+use Data::Dumper;
 
 use DBI;
 
+use OLWS::Common::Utils;
 use OLWS::Sisis::Config;
 
 # Importieren der Konfigurationsdaten als Globale Variablen
@@ -44,27 +46,18 @@ use vars qw(%config);
 *config=\%OLWS::Sisis::Config::config;
 
 sub authenticate_user {
-  
-  my ($class, $username, $password, $database) = @_;
+  my ($class, $args_ref) = @_;
+
+  my $username = $args_ref->{username};
+  my $password = $args_ref->{password};
+  my $database = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
-  
-  my %monthtab=(
-		Jan => '01',
-		Feb => '02',
-		Mar => '03',
-		Apr => '04',
-		May => '05',
-		Jun => '06',
-		Jul => '07',
-		Aug => '08',
-		Sep => '09',
-		Oct => '10',
-		Nov => '11',
-		Dec => '12',
-	       );
+
+  $logger->info("$username - $password - $database");
+  $logger->info(Dumper($args_ref));
   
   #####################################################################
   # Verbindung zur SQL-Datenbank herstellen
@@ -91,40 +84,29 @@ sub authenticate_user {
   my $res=$result->fetchrow_hashref();
   
   # Personendaten
-  my $vorname=$res->{'d02vname'};
-  my $nachname=$res->{'d02name'};
-  my $geschlecht=$res->{'d02sex'};
-  my $geburtsdatum=$res->{'d02gedatum'};
-  my $ort=$res->{'d02o1'};
-  my $strasse=$res->{'d02s1'};
-  my $plz=$res->{'d02p1'};
+  my $vorname      = $res->{'d02vname'};
+  my $nachname     = $res->{'d02name'};
+  my $geschlecht   = $res->{'d02sex'};
+  my $geburtsdatum = OLWS::Common::Utils::conv_date($res->{'d02gedatum'});
+  my $ort          = $res->{'d02o1'};
+  my $strasse      = $res->{'d02s1'};
+  my $plz          = $res->{'d02p1'};
   
   # Gebuehrendaten
-  my $soll=$res->{'d02so1'};
-  my $guthaben=$res->{'d02gut'};
+  my $soll         = $res->{'d02so1'};
+  my $guthaben     = $res->{'d02gut'};
 
   # Ausleihdaten
-  my $avanz=$res->{'d02avanz'};           # Anzahl ausgeliehender Medien
-  my $branz=$res->{'d02branz'};           # Anzahl rueckgeforderter Medien
-  my $bestellanz=$res->{'d02bestellanz'}; # Anzahl bestellter Medien
-  my $pflanz=$res->{'d02pflanz'};         # Anzahl fernleihbestellter Medien
-  my $vmanz=$res->{'d02vmanz'};           # Anzahl vorgemerkter Medien
-  #my $maanz=$res->{'d02maanz'};           # Anzahl gemahnter Medien
-  my $vlanz=$res->{'d02vlanz'};           # Anzahl verlaengerter Medien
-  my $sperre=$res->{'d02sp1'};            # Sperre (inkl. Grund)
-  my $sperrdatum=$res->{'d02d1sperre'};        # Sperrdatum
+  my $avanz        = $res->{'d02avanz'};           # Anzahl ausgeliehender Medien
+  my $branz        = $res->{'d02branz'};           # Anzahl rueckgeforderter Medien
+  my $bestellanz   = $res->{'d02bestellanz'};      # Anzahl bestellter Medien
+  my $pflanz       = $res->{'d02pflanz'};          # Anzahl fernleihbestellter Medien
+  my $vmanz        = $res->{'d02vmanz'};           # Anzahl vorgemerkter Medien
+  #my $maanz        = $res->{'d02maanz'};          # Anzahl gemahnter Medien
+  my $vlanz        = $res->{'d02vlanz'};           # Anzahl verlaengerter Medien
+  my $sperre       = $res->{'d02sp1'};             # Sperre (inkl. Grund)
+  my $sperrdatum   = OLWS::Common::Utils::conv_date($res->{'d02d1sperre'}); # Sperrdatum
 
-  my ($month,$day,$year)=$geburtsdatum=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
-  $day=~s/^(\d)$/0$1/;
-  $month=~s/^(\d)$/0$1/;
-  $geburtsdatum=$day.".".$monthtab{$month}.".".$year;
-  
-  ($month,$day,$year)=$sperrdatum=~m/^([A-Za-z]+)\s+(\d+)\s+(\d+)\s+/;
-  $day=~s/^(\d)$/0$1/;
-  $month=~s/^(\d)$/0$1/;
-  $sperrdatum=$day.".".$monthtab{$month}.".".$year;
-  
-  
   $result=$dbh->prepare("select * from $database.sisis.d02onl where d02obnr = ? and d02oart = 1");
   
   $result->execute($username) or $logger->error_die($DBI::errstr);
@@ -163,37 +145,36 @@ sub authenticate_user {
   @resarr=$result->fetchrow_arrayref();
   my $maanz=$resarr[0][0];
 
-  
-  my $userinfo={
-		Vorname => $vorname,
-		Nachname => $nachname,
-		Geschlecht => $geschlecht,
-		Geburtsdatum => $geburtsdatum,
-		Ort =>$ort,
-		Strasse => $strasse,
-		PLZ => $plz,
+  my $userinfo_ref = SOAP::Data->name(User  => \SOAP::Data->value(
+		SOAP::Data->name(Vorname      => $vorname)->type('string'),
+		SOAP::Data->name(Nachname     => $nachname)->type('string'),
+		SOAP::Data->name(Geschlecht   => $geschlecht)->type('string'),
+		SOAP::Data->name(Geburtsdatum => $geburtsdatum)->type('string'),
+		SOAP::Data->name(Ort          => $ort)->type('string'),
+		SOAP::Data->name(Strasse      => $strasse)->type('string'),
+		SOAP::Data->name(PLZ          => $plz)->type('string'),
 
-		Soll => $soll,
-		Guthaben => $guthaben,
+		SOAP::Data->name(Soll         => $soll)->type('float'),
+		SOAP::Data->name(Guthaben     => $guthaben)->type('float'),
 
-		Avanz => $avanz,
-		Branz => $branz,
-		Bsanz => $bsanz,
-		Bestellanz => $bestellanz,
-		Pflanz => $pflanz,
-		Vmanz => $vmanz,
-		Maanz => $maanz,
-		Vlanz => $vlanz,
+		SOAP::Data->name(Avanz        => $avanz)->type('int'),
+		SOAP::Data->name(Branz        => $branz)->type('int'),
+		SOAP::Data->name(Bsanz        => $bsanz)->type('int'),
+		SOAP::Data->name(Bestellanz   => $bestellanz)->type('int'),
+		SOAP::Data->name(Pflanz       => $pflanz)->type('int'),
+		SOAP::Data->name(Vmanz        => $vmanz)->type('int'),
+		SOAP::Data->name(Maanz        => $maanz)->type('int'),
+		SOAP::Data->name(Vlanz        => $vlanz)->type('int'),
 
-                Sperre => $sperre,		
-                Sperrdatum => $sperrdatum,
-                Email => $email,		
-	       };
+                SOAP::Data->name(Sperre       => $sperre)->type('string'),		
+                SOAP::Data->name(Sperrdatum   => $sperrdatum)->type('string'),
+                SOAP::Data->name(Email        => $email)->type('string')
+  ));
   
   $result->finish;
   $dbh->disconnect();
 
-  return $userinfo;
+  return $userinfo_ref;
 }
 
 1;
