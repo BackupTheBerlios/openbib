@@ -4,7 +4,7 @@
 #
 #  OLWS::Dispatch
 #
-#  Dieses File ist (C) 2005-2006 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2005 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der
@@ -32,25 +32,16 @@ use warnings;
 
 use Log::Log4perl qw(get_logger :levels);
 
-use OLWS::Sisis::Config;
-
-# Importieren der Konfigurationsdaten als Globale Variablen
-# in diesem Namespace
-
-use vars qw(%config);
-
-*config=\%OLWS::Sisis::Config::config;
-
-
 use SOAP::Transport::HTTP;
 
 my $server = SOAP::Transport::HTTP::Apache
   -> dispatch_with({
-                     'urn:/Aquisition'     => 'OLWS::Sisis::Aquisition',
-                     'urn:/Authentication' => 'OLWS::Sisis::Authentication',
-                     'urn:/Circulation'    => 'OLWS::Sisis::Circulation',
-                     'urn:/Media'          => 'OLWS::Sisis::Media',
-                     'urn:/MediaStatus'    => 'OLWS::Sisis::MediaStatus',
+                     'urn:/Aquisition'     => 'OLWS::Aquisition',
+                     'urn:/Authentication' => 'OLWS::Authentication',
+                     'urn:/Circulation'    => 'OLWS::Circulation',
+                     'urn:/Media'          => 'OLWS::Media',
+                     'urn:/MediaStatus'    => 'OLWS::MediaStatus',
+                     'urn:/Statistics'     => 'OLWS::Statistics',
                    });
 
 sub handler { 
@@ -62,7 +53,7 @@ sub handler {
 
    $logger->info("Request from: ".$r->get_remote_host);
 
-   $server->handler(@_); 
+   $server->handler(@_);
 }
 
 1;
