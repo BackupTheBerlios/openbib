@@ -36,7 +36,7 @@ use DBI;
 
 use OLWS::Sisis::Data;
 use OLWS::Sisis::Config;
-use OLWS::Common::SLNP::Loan;
+use OLWS::Common::SLNP::Circulation;
 use OLWS::Common::Utils;
 
 # Importieren der Konfigurationsdaten als Globale Variablen
@@ -89,8 +89,18 @@ sub get_orders {
   # Log4perl logger erzeugen
   
   my $logger = get_logger();
+
+  my $sql_statement = qq{
+  select d01gsi,d01ort,d01ex,d01av,d01rv,d01aufnahme,d01katkey,d01mtyp,d01skond 
+  from $database.sisis.d01buch 
+
+  where d01bnr = ? 
+    and d01status = 2 
+
+  order by d01rv asc
+  };
   
-  my $request=$self->{dbh}->prepare("select d01gsi,d01ort,d01ex,d01av,d01rv,d01aufnahme,d01katkey,d01mtyp,d01skond from $database.sisis.d01buch where d01bnr = ? and d01status = 2 order by d01rv asc");
+  my $request=$self->{dbh}->prepare($sql_statement);
   
   $request->execute($username) or $logger->error_die($DBI::errstr);
   
@@ -173,10 +183,30 @@ sub get_reservations {
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
+
+  my $sql_statement = qq{
+  select * 
+
+  from $database.sisis.d04vorm 
+
+  where d04bnr = ?
+  };
   
-  my $request=$self->{dbh}->prepare("select * from $database.sisis.d04vorm where d04bnr = ?");
+  my $request=$self->{dbh}->prepare($sql_statement);
   $request->execute($username) or $logger->error_die($DBI::errstr);
-  
+
+  $sql_statement = qq{
+  select * 
+ 
+  from $database.sisis.d04vorm 
+
+  where d04katkey = ? 
+
+  order by d04vmnr
+  };
+
+  my $request2=$self->{dbh}->prepare($sql_statement);  
+
   my @reservationlist=();
   
   while (my $res=$request->fetchrow_hashref()){
@@ -193,7 +223,6 @@ sub get_reservations {
     
     my $stelle=-1;
 
-    my $request2=$self->{dbh}->prepare("select * from $database.sisis.d04vorm where d04katkey = ? order by d04vmnr");
     $request2->execute($katkey) or $logger->error_die($DBI::errstr);
 
     my $counter=1;
@@ -229,6 +258,9 @@ sub get_reservations {
     push @reservationlist, $singlereservation_ref;    
   }
 
+  $request->finish;
+  $request2->finish;
+
   return SOAP::Data->name(ReservationList  => SOAP::Data->value(\@reservationlist));
 
 }
@@ -245,8 +277,17 @@ sub get_reminders {
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
+
+  my $sql_statement = qq{
+  select * 
+
+  from $database.sisis.d03geb 
+
+  where d03bnr = ? 
+    and d03stat != 4128
+  };
   
-  my $request=$self->{dbh}->prepare("select * from $database.sisis.d03geb where d03bnr = ? and d03stat != 4128");
+  my $request=$self->{dbh}->prepare($sql_statement);
   $request->execute($username) or $logger->error_die($DBI::errstr);
   
   my @reminderlist=();
@@ -292,6 +333,8 @@ sub get_reminders {
     push @reminderlist, $singlereminder_ref;
   }
 
+  $request->finish;
+
   return SOAP::Data->name(ReminderList  => SOAP::Data->value(\@reminderlist));  
 }
 
@@ -308,7 +351,18 @@ sub get_borrows {
 
   my $logger = get_logger();
   
-  my $request=$self->{dbh}->prepare("select d01gsi,d01ort,d01ex,d01av,d01rv,d01katkey,d01mtyp,d01skond from $database.sisis.d01buch where d01bnr = ? and d01status = 4 order by d01rv asc");
+  my $sql_statement = qq{
+  select d01gsi,d01ort,d01ex,d01av,d01rv,d01katkey,d01mtyp,d01skond 
+
+  from $database.sisis.d01buch 
+
+  where d01bnr = ? 
+    and d01status = 4 
+
+  order by d01rv asc
+  };
+
+  my $request=$self->{dbh}->prepare($sql_statement);
   $request->execute($username) or $logger->error_die($DBI::errstr);
   
   my @borrowlist=();
@@ -349,6 +403,8 @@ sub get_borrows {
     
     push @borrowlist, $singleborrow_ref;
   }
+
+  $request->finish;
   
   return SOAP::Data->name(BorrowList  => SOAP::Data->value(\@borrowlist));
 }
@@ -365,8 +421,16 @@ sub get_idn_of_borrows {
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
+
+  my $sql_statement = qq{
+  select d01katkey 
+
+  from $database.sisis.d01buch 
+
+  where d01bnr = ? 
+  };
   
-  my $request=$self->{dbh}->prepare("select d01katkey from $database.sisis.d01buch where d01bnr = ? ");
+  my $request=$self->{dbh}->prepare($sql_statement);
   $request->execute($username) or $logger->error_die($DBI::errstr);
   
   my @borrowlist=();
@@ -379,6 +443,8 @@ sub get_idn_of_borrows {
 		SOAP::Data->name(Katkey          => $katkey)->type('string'),
                	));
   }
+
+  $request->finish;
 
   return SOAP::Data->name(BorrowList  => SOAP::Data->value(\@borrowlist));
 }
@@ -396,7 +462,7 @@ sub make_reservation {
 
   my $logger = get_logger();
  
-  my $response_ref = OLWS::Common::SLNP::Loan::make_reservation($username, $mediennummer, $zweigstelle, $ausgabeort);
+  my $response_ref = OLWS::Common::SLNP::Circulation::make_reservation($username, $mediennummer, $zweigstelle, $ausgabeort);
 
   return $response_ref;
 }

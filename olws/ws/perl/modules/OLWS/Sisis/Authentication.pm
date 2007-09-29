@@ -63,25 +63,43 @@ sub authenticate_user {
   # Verbindung zur SQL-Datenbank herstellen
   
   my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
+
+  my $sql_statement = qq{
+  select count(*) 
+
+  from $database.sisis.d02ben 
+
+  where d02bnr = ? 
+    and d02opacpin = ?
+  };
   
-  my $result=$dbh->prepare("select count(*) from $database.sisis.d02ben where d02bnr = ? and d02opacpin = ?");
+  my $request=$dbh->prepare($sql_statement);
   
-  $result->execute($username,$password) or $logger->error_die($DBI::errstr);
+  $request->execute($username,$password) or $logger->error_die($DBI::errstr);
   
-  my @resarr=$result->fetchrow_arrayref();
+  my @resarr=$request->fetchrow_arrayref();
   my $count=$resarr[0][0];
   
   if ($count != 1){
-    $result->finish;
+    $request->finish;
     $dbh->disconnect();
     return undef;
   }
   
-  $result=$dbh->prepare("select * from $database.sisis.d02ben where d02bnr = ? and d02opacpin = ?");
+  $sql_statement = qq{
+  select * 
+
+  from $database.sisis.d02ben 
+
+  where d02bnr = ? 
+    and d02opacpin = ?
+  };
+
+  $request=$dbh->prepare($sql_statement);
   
-  $result->execute($username,$password) or $logger->error_die($DBI::errstr);
+  $request->execute($username,$password) or $logger->error_die($DBI::errstr);
   
-  my $res=$result->fetchrow_hashref();
+  my $res=$request->fetchrow_hashref();
   
   # Personendaten
   my $vorname      = $res->{'d02vname'};
@@ -107,42 +125,69 @@ sub authenticate_user {
   my $sperre       = $res->{'d02sp1'};             # Sperre (inkl. Grund)
   my $sperrdatum   = OLWS::Common::Utils::conv_date($res->{'d02d1sperre'}); # Sperrdatum
 
-  $result=$dbh->prepare("select * from $database.sisis.d02onl where d02obnr = ? and d02oart = 1");
+  $sql_statement = qq{
+  select * 
+
+  from $database.sisis.d02onl 
+
+  where d02obnr = ? 
+    and d02oart = 1
+  };
+
+  $request=$dbh->prepare($sql_statement);
   
-  $result->execute($username) or $logger->error_die($DBI::errstr);
+  $request->execute($username) or $logger->error_die($DBI::errstr);
   
   my @emailadr=();
-  while (my $res=$result->fetchrow_hashref()){
+  while (my $res=$request->fetchrow_hashref()){
     my $singleemail=$res->{'d02ozeile'};
     push @emailadr, $singleemail;
   }	
   
   my $email=join(" ; ",@emailadr);
   
-  $result=$dbh->prepare("select count(*) from $database.sisis.d01buch where d01bnr = ? and d01status = 2") or $logger->error_die($DBI::errstr);
+  $sql_statement = qq{
+  select count(*) 
+
+  from $database.sisis.d01buch 
+
+  where d01bnr = ? 
+    and d01status = 2
+  };
+
+  $request=$dbh->prepare($sql_statement) or $logger->error_die($DBI::errstr);
   
-  $result->execute($username) or $logger->error_die($DBI::errstr);
+  $request->execute($username) or $logger->error_die($DBI::errstr);
   
-  my @resarray=$result->fetchrow_array();
+  my @resarray=$request->fetchrow_array();
   my $bsanz=$resarray[0];
   
   # Sperre
   if ($sperre){
-    my $result=$dbh->prepare("select d65text from $database.sisis.d65param where d65nr = ? and d65typ=2") or $logger->error_die($DBI::errstr);
-    $result->execute($sperre) or $logger->error_die($DBI::errstr);
+    my $request=$dbh->prepare("select d65text from $database.sisis.d65param where d65nr = ? and d65typ=2") or $logger->error_die($DBI::errstr);
+    $request->execute($sperre) or $logger->error_die($DBI::errstr);
     
-    while (my $res=$result->fetchrow_hashref()){
+    while (my $res=$request->fetchrow_hashref()){
       my $sperrgrund=$res->{'d65text'};
       $sperre=$sperrgrund;
     }	
-    $result->finish;
+    $request->finish;
   }
 
-  $result=$dbh->prepare("select count(*) from $database.sisis.d03geb where d03bnr = ? and d03stat != 4128") or $logger->error_die($DBI::errstr);
+  $sql_statement = qq{
+  select count(*) 
+
+  from $database.sisis.d03geb 
+
+  where d03bnr = ? 
+    and d03stat != 4128
+  };
+
+  $request=$dbh->prepare($sql_statement) or $logger->error_die($DBI::errstr);
   
-  $result->execute($username) or $logger->error_die($DBI::errstr);
+  $request->execute($username) or $logger->error_die($DBI::errstr);
   
-  @resarr=$result->fetchrow_arrayref();
+  @resarr=$request->fetchrow_arrayref();
   my $maanz=$resarr[0][0];
 
   my $userinfo_ref = SOAP::Data->name(User  => \SOAP::Data->value(
@@ -171,7 +216,7 @@ sub authenticate_user {
                 SOAP::Data->name(Email        => $email)->type('string')
   ));
   
-  $result->finish;
+  $request->finish;
   $dbh->disconnect();
 
   return $userinfo_ref;

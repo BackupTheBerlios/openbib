@@ -4,7 +4,7 @@
 #
 #  OLWS::Sisis::MediaStatus
 #
-#  Dieses File ist (C) 2005 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2005-2007 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der
@@ -44,8 +44,10 @@ use vars qw(%config);
 *config=\%OLWS::Sisis::Config::config;
 
 sub get_mediastatus {
-  
-  my ($class, $katkey, $database) = @_;
+  my ($class, $args_ref) = @_;
+
+  my $katkey   = $args_ref->{katkey};
+  my $database = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
@@ -57,40 +59,61 @@ sub get_mediastatus {
   # Verbindung zur SQL-Datenbank herstellen
   
   my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
+
+  my $sql_statement = qq{
+  select * 
+
+  from $database.sisis.d50zweig
+  };
   
-  my $result=$dbh->prepare("select * from $database.sisis.d50zweig");
-  $result->execute() or $logger->error_die($DBI::errstr);
+  my $request=$dbh->prepare($sql_statement);
+  $request->execute() or $logger->error_die($DBI::errstr);
   
   my %zweig=();
-  while (my $res=$result->fetchrow_hashref()){
+  while (my $res=$request->fetchrow_hashref()){
     $zweig{$res->{'d50zweig'}}{Bezeichnung}=$res->{'d50bezeich'};
   }
   
-  $result=$dbh->prepare("select * from $database.sisis.d60abteil");
-  $result->execute() or $logger->error_die($DBI::errstr);
+  $sql_statement = qq{
+  select * 
+
+  from $database.sisis.d60abteil
+  };
+
+  $request=$dbh->prepare($sql_statement);
+  $request->execute() or $logger->error_die($DBI::errstr);
   
   my %abteilung=();
-  while (my $res=$result->fetchrow_hashref()){
+  while (my $res=$request->fetchrow_hashref()){
     $abteilung{$res->{'d60zweig'}}{$res->{'d60abt'}}=$res->{'d60bezeich'};
   }
   
-  $result=$dbh->prepare("select d01gsi,d01ort,d01entl,d01mtyp,d01ex,d01status,d01skond,d01rv,d01abtlg,d01zweig,d01bnr from $database.sisis.d01buch where d01katkey = ?");
-  $result->execute($katkey) or $logger->error_die($DBI::errstr);;
+  $sql_statement = qq{
+  select d01aort,d01gsi,d01ort,d01entl,d01mtyp,d01ex,d01status,d01skond,d01rv,d01abtlg,d01zweig,d01bnr 
+
+  from $database.sisis.d01buch 
+
+  where d01katkey = ?
+  };
+
+  $request=$dbh->prepare($sql_statement);
+  $request->execute($katkey) or $logger->error_die($DBI::errstr);;
   
-  my @exemplarliste=();
-  while (my $res=$result->fetchrow_hashref()){
-    my $mediennr  = $res->{'d01gsi'};
-    my $signatur  = $res->{'d01ort'};
-    my $exemplar  = $res->{'d01ex'};
-    my $rueckgabe = $res->{'d01rv'};
-    my $entl      = $res->{'d01entl'};
-    my $status    = $res->{'d01status'};
-    my $skond     = $res->{'d01skond'};
-    my $standort  = $res->{'d01abtlg'};
-    my $mtyp      = $res->{'d01mtyp'};
-    my $bnr       = $res->{'d01bnr'};
-    my $zweignr   = $res->{'d01zweig'};
-    my $zweigst   = "";
+  my @medialist = ();
+  while (my $res=$request->fetchrow_hashref()){
+    my $mediennr   = $res->{'d01gsi'};
+    my $signatur   = $res->{'d01ort'};
+    my $exemplar   = $res->{'d01ex'};
+    my $rueckgabe  = $res->{'d01rv'};
+    my $entl       = $res->{'d01entl'};
+    my $status     = $res->{'d01status'};
+    my $skond      = $res->{'d01skond'};
+    my $standort   = $res->{'d01abtlg'};
+    my $mtyp       = $res->{'d01mtyp'};
+    my $bnr        = $res->{'d01bnr'};
+    my $zweignr    = $res->{'d01zweig'};
+    my $ausgabeort = $res->{'d01aort'};
+    my $zweigst    = "";
 
     my $statusstring="";
 
@@ -173,21 +196,22 @@ sub get_mediastatus {
     
     $standort="-" unless ($standort);
     
-    my $singleex={
-                  Mediennr    => $mediennr,
-                  Zweigstelle => $zweignr,
-		  Signatur    => $signatur,
-		  Exemplar    => $exemplar,
-		  Standort    => $standort,
-		  Status      => $statusstring,
-                  Statuscode  => $status,	
-		  Rueckgabe   => $rueckgabe,
-		 };
+    my $singleex_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
+		SOAP::Data->name(Mediennr    => $mediennr)->type('string'),
+		SOAP::Data->name(Zweigstelle => $zweignr)->type('string'),
+		SOAP::Data->name(Signatur    => $signatur)->type('string'),
+		SOAP::Data->name(Exemplar    => $exemplar)->type('string'),
+		SOAP::Data->name(Standort    => $standort)->type('string'),
+		SOAP::Data->name(Status      => $statusstring)->type('string'),
+		SOAP::Data->name(Statuscode  => $status)->type('string'),
+		SOAP::Data->name(Rueckgabe   => $rueckgabe)->type('string'),
+		SOAP::Data->name(Ausgabeort  => $ausgabeort)->type('string'),
+	));
     
-    push @exemplarliste, $singleex;
+    push @medialist, $singleex_ref;
   }
-  
-  return \@exemplarliste;
+
+  return SOAP::Data->name(MediaList  => SOAP::Data->value(\@medialist));
 }
 
 1;

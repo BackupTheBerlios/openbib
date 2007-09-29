@@ -44,8 +44,11 @@ use vars qw(%config);
 *config=\%OLWS::Sisis::Config::config;
 
 sub get_recent_titids_by_acqgrp {
-  
-  my ($class, $database, $acqgrp, $limit) = @_;
+  my ($class, $args_ref) = @_;
+
+  my $acqgrp   = $args_ref->{acqgrp};
+  my $limit    = $args_ref->{limit};
+  my $database = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
@@ -60,15 +63,34 @@ sub get_recent_titids_by_acqgrp {
 
   $dbh->do("set rowcount $limit");
   
-  my $result=$dbh->prepare("select distinct katkey from $database.sisis.rechkopf, $database.sisis.rechbuch, $database.sisis.acq_band, $database.sisis.bestellung where $database.sisis.rechkopf.rnr = $database.sisis.rechbuch.rnr and $database.sisis.rechbuch.bnr   = $database.sisis.acq_band.bnr and $database.sisis.rechbuch.band  = $database.sisis.acq_band.band and $database.sisis.rechbuch.bnr   = $database.sisis.bestellung.bnr and not (verarbcode = 2) and $database.sisis.acq_band.fach = ? order by ivdatum DESC");
-  $result->execute($acqgrp) or $logger->error_die($DBI::errstr);
+  my $sql_statement = qq{
+  select distinct katkey 
+
+  from $database.sisis.rechkopf, $database.sisis.rechbuch, $database.sisis.acq_band, $database.sisis.bestellung 
+
+  where $database.sisis.rechkopf.rnr = $database.sisis.rechbuch.rnr 
+     and $database.sisis.rechbuch.bnr   = $database.sisis.acq_band.bnr 
+     and $database.sisis.rechbuch.band  = $database.sisis.acq_band.band 
+     and $database.sisis.rechbuch.bnr   = $database.sisis.bestellung.bnr 
+     and not (verarbcode = 2) 
+     and $database.sisis.acq_band.fach = ? 
+
+  order by ivdatum DESC
+  };
+
+  my $request=$dbh->prepare($sql_statement);
+  $request->execute($acqgrp) or $logger->error_die($DBI::errstr);
   
-  my @titlist=();
-  while (my $res=$result->fetchrow_hashref()){
-    push @titlist, $res->{katkey};
+  my @medialist=();
+  while (my $res=$request->fetchrow_hashref()){
+    push @medialist, SOAP::Data->name(MediaItem  => \SOAP::Data->value(
+		SOAP::Data->name(Katkey          => $res->{katkey})->type('string')));
   }
 
-  return \@titlist;
+  $request->finish;
+  $dbh->disconnect();
+
+  return SOAP::Data->name(MediaList  => SOAP::Data->value(\@medialist));
 }
 
 1;
