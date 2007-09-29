@@ -4,7 +4,7 @@
 #
 #  OLWS::Sisis::Config
 #
-#  Dieses File ist (C) 2005 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2005-2007 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der
@@ -48,6 +48,23 @@ use vars qw(%config);
                          'sisis' => 'active',
                         },
 
+           # Einstellungen fuer den Zugriff auf den OPServer
+
+           op_host    => '127.0.0.1', # ssh-Tunnel
+           op_port    => '3026',
+           timeout    => '15',
+
 );
+
+sub new {
+    my $class = shift;
+
+    # Ininitalisierung mit Config-Parametern
+    my $self = \%config;
+
+    bless ($self, $class);
+
+    return $self;
+}
 
 1;
