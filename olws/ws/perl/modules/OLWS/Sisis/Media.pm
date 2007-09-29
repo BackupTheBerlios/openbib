@@ -44,152 +44,187 @@ use vars qw(%config);
 
 *config=\%OLWS::Sisis::Config::config;
 
-sub get_native_title_by_katkey {
-  
-  my ($class, $database, $katkey) = @_;
+sub new {
+    my ($class,$database) = @_;
 
+    # Log4perl logger erzeugen
+    my $logger = get_logger();
+
+    my $config = new OLWS::Sisis::Config();
+    
+    my $self = { };
+
+    bless ($self, $class);
+
+    # Verbindung zur SQL-Datenbank herstellen
+    my $dbh
+        = DBI->connect("DBI:$config->{dbimodule}:dbname=$database;server=$config->{dbserver};host=$config->{dbhost};port=$config->{dbport}", $config->{dbuser}, $config->{dbpasswd})
+            or $logger->error($DBI::errstr);
+
+    $self->{dbh}       = $dbh;
+
+    $self->{sikfstab}  = OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
+
+    return $self;
+}
+
+sub get_native_title_by_katkey {
+  my ($self, $args_ref) = @_;
+
+  my $katkey   = $args_ref->{katkey};
+  my $database = $args_ref->{database};
+  
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
   
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
+  my $title_ref    = OLWS::Sisis::Data::get_titref_by_katkey($self->{sikfstab},$self->{dbh},$database,$katkey);	
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
-  
-  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
-  my $titelref=OLWS::Sisis::Data::get_titref_by_katkey($sikfstabref,$dbh,$database,$katkey);	
-  
-  return $titelref;
+  return $title_ref;
 }
 
 sub get_raw_tit_by_katkey {
-  
-  my ($class, $database, $katkey) = @_;
+  my ($self, $args_ref) = @_;
+
+  my $katkey   = $args_ref->{katkey};
+  my $database = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
   
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
+  my $title_ref    = OLWS::Sisis::Data::get_raw_titref_by_katkey($self->{sikfstab},$self->{dbh},$database,$katkey);	
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
-  
-  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
-  my $titref=OLWS::Sisis::Data::get_raw_titref_by_katkey($sikfstabref,$dbh,$database,$katkey);	
-  
-  return $titref;
+  return $title_ref;
 }
 
 
 sub get_raw_aut_by_katkey {
-  
-  my ($class, $database, $katkey) = @_;
+  my ($self, $args_ref) = @_;
+
+  my $katkey   = $args_ref->{katkey};
+  my $database = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
   
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
+  my $aut_ref      = OLWS::Sisis::Data::get_raw_autref_by_katkey($self->{sikfstab},$self->{dbh},$database,$katkey);	
   
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
-  
-  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
-  my $autref=OLWS::Sisis::Data::get_raw_autref_by_katkey($sikfstabref,$dbh,$database,$katkey);	
-  
-  return $autref;
+  return $aut_ref;
 }
 
 sub get_raw_kor_by_katkey {
-  
-  my ($class, $database, $katkey) = @_;
+  my ($self, $args_ref) = @_;
+
+  my $katkey   = $args_ref->{katkey};
+  my $database = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
   
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
-  
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
-  
-  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
-  my $korref=OLWS::Sisis::Data::get_raw_korref_by_katkey($sikfstabref,$dbh,$database,$katkey);	
+  my $korref=OLWS::Sisis::Data::get_raw_korref_by_katkey($self->{sikfstab},$self->{dbh},$database,$katkey);	
   
   return $korref;
 }
 
 sub get_raw_swt_by_katkey {
-  
-  my ($class, $database, $katkey) = @_;
+  my ($self, $args_ref) = @_;
+
+  my $katkey   = $args_ref->{katkey};
+  my $database = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
   
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
-  
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
-  
-  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
-  my $swtref=OLWS::Sisis::Data::get_raw_swtref_by_katkey($sikfstabref,$dbh,$database,$katkey);	
+  my $swtref=OLWS::Sisis::Data::get_raw_swtref_by_katkey($self->{sikfstab},$self->{dbh},$database,$katkey);	
   
   return $swtref;
 }
 
 sub get_raw_not_by_katkey {
-  
-  my ($class, $database, $katkey) = @_;
+  my ($self, $args_ref) = @_;
+
+  my $katkey   = $args_ref->{katkey};
+  my $database = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
   
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
-  
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
-  
-  my $sikfstabref=OLWS::Sisis::Data::get_sikfstabref($dbh,$database);
-  my $notref=OLWS::Sisis::Data::get_raw_notref_by_katkey($sikfstabref,$dbh,$database,$katkey);	
+  my $notref=OLWS::Sisis::Data::get_raw_notref_by_katkey($self->{sikfstab},$self->{dbh},$database,$katkey);	
   
   return $notref;
 }
 
 sub get_title_katkeys_by_date {
-  my ($class, $database, $from_date, $to_date) = @_;
+  my ($self, $args_ref) = @_;
+
+  my $from_date = $args_ref->{fromdate};
+  my $to_date   = $args_ref->{todate};
+  my $database  = $args_ref->{database};
 
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
 
   $logger->debug("From: $from_date To: $to_date");  
-  #####################################################################
-  # Verbindung zur SQL-Datenbank herstellen
-  
-  my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
 
-  my $result=$dbh->prepare("select katkey from $database.sisis.titel_exclude");
-  $result->execute();
+  my $sql_statement = qq{
+  select katkey 
+
+  from $database.sisis.titel_exclude
+  };
+
+  my $request=$self->{dbh}->prepare($sql_statement);
+  $request->execute();
 
   my $excluded_katkey_ref=();
-  while (my $res_ref=$result->fetchrow_arrayref){
+  while (my $res_ref=$request->fetchrow_arrayref){
     $excluded_katkey_ref->{$res_ref->[0]} = 1;
   }	
 
-#  my $result=$dbh->prepare("select distinct dup.katkey as katkey from $database.sisis.titel_dupdaten as dup left join $database.sisis.titel_exclude on $database.sisis.titel_exclude.katkey != dup.katkey where (dup.datumaufn >= ? and dup.datumaufn <= ?) or (dup.datumaend >= ? and dup.datumaend <= ?)");
-  $result=$dbh->prepare("select dup.katkey from $database.sisis.titel_dupdaten as dup where (dup.datumaufn >= ? and dup.datumaufn <= ?) or (dup.datumaend >= ? and dup.datumaend <= ?)");
-  $result->execute($from_date,$to_date,$from_date,$to_date) or $logger->error_die($DBI::errstr);
+#  $sql_statement = qq{
+#  select distinct dup.katkey as katkey 
+#
+#  from $database.sisis.titel_dupdaten as dup 
+#
+#  left join $database.sisis.titel_exclude on $database.sisis.titel_exclude.katkey != dup.katkey 
+#
+#  where (dup.datumaufn >= ? and dup.datumaufn <= ?) 
+#    or (dup.datumaend >= ? and dup.datumaend <= ?)
+#  };
+
+  $sql_statement = qq{
+  select dup.katkey 
+
+  from $database.sisis.titel_dupdaten as dup 
+
+  where (dup.datumaufn >= ? and dup.datumaufn <= ?) 
+    or (dup.datumaend >= ? and dup.datumaend <= ?)
+  };
+
+  $request=$self->{dbh}->prepare($sql_statement);
+  $request->execute($from_date,$to_date,$from_date,$to_date) or $logger->error_die($DBI::errstr);
 
   my @katkeys=();
-  while (my $res_ref=$result->fetchrow_arrayref){
+  while (my $res_ref=$request->fetchrow_arrayref){
     push @katkeys, $res_ref->[0] if (!defined $excluded_katkey_ref->{$res_ref->[0]});
   }	
 
   return \@katkeys;
+}
+
+sub DESTROY {
+    my $self = shift;
+
+    return if (!defined $self->{dbh});
+
+    $self->{dbh}->disconnect();
+
+    return;
 }
 
 1;
