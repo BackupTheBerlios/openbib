@@ -43,9 +43,11 @@ use vars qw(%config);
 *config=\%OLWS::Config::config;
 
 sub get_recent_titids_by_acqgrp {
-    my $self=shift;
+    my ($self,$arg_ref) = @_;
+
     my $backend="OLWS::$config{backend}::Aquisition";
-    return $backend->get_recent_titids_by_acqgrp(@_);
+
+    return $backend->get_recent_titids_by_acqgrp($arg_ref);
 }
 
 1;

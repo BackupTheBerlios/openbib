@@ -2,7 +2,7 @@
 #
 #  Open Library WebServices
 #
-#  OLWS::MediaStatus
+#  OLWS::Authentication
 #
 #  Dieses File ist (C) 2005-2007 Oliver Flimm <flimm@openbib.org>
 #
@@ -25,7 +25,7 @@
 #
 #####################################################################   
 
-package OLWS::MediaStatus;
+package OLWS::Authentication;
 
 use strict;
 use warnings;
@@ -33,7 +33,7 @@ use warnings;
 use OLWS::Config;
 
 # Liste der moeglichen Backend-Module
-use OLWS::Sisis::MediaStatus;
+use OLWS::Sisis::Authentication;
 
 # Importieren der Konfigurationsdaten als Globale Variablen
 # in diesem Namespace
@@ -42,12 +42,12 @@ use vars qw(%config);
 
 *config=\%OLWS::Config::config;
 
-sub get_mediastatus {
+sub authenticate_user {
     my ($self,$arg_ref) = @_;
 
-    my $backend="OLWS::$config{backend}::MediaStatus";
+    my $backend="OLWS::$config{backend}::Authentication";
 
-    return $backend->get_mediastatus($arg_ref);
+    return $backend->authenticate_user($arg_ref);
 }
 
 1;

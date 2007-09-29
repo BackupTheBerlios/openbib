@@ -43,8 +43,9 @@ use vars qw(%config);
 *config=\%OLWS::Config::config;
 
 sub get_current_borrows {
-    my $self=shift;
+    my ($self,$arg_ref) = @_;
+
     my $backend="OLWS::$config{backend}::Statistics";
-    return $backend->get_current_borrows(@_);
+    return $backend->get_current_borrows($arg_ref);
 }
 1;
