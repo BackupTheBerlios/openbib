@@ -1,0 +1,47 @@
+[%- listrow = 'listrow1' -%]
+[%- FOREACH thisimage IN thisimages %]
+<tr class="[% listrow %]"><td align="center">
+[%- IF thisimage.thumb -%]
+ <a class="invisible" href="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/
+[%- IF thisimage.web -%]
+[%- thisimage.web -%]
+[%- ELSE -%]
+[%- thisimage.name -%]
+[%- END -%]
+"><img src="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% thisimage.thumb %]" alt="Bild [% thisimage.name %]" /></a>
+[%- END -%]
+</td><td>[ <a href="http://[% config.servername %]/digiarchive/[% collection %]/[% item %]/[% thisimage.name %]">Vollbild</a> ]</td><td align="left">
+<table cellpadding="5">
+[%- FOREACH cat IN thisimage.meta -%]
+[%- category =  cat.key -%]
+[%- content  =  cat.value -%]
+[%- IF category == 'M0435' -%]
+<tr><td><b>Ma&szlig;e</b></td><td align="left">[% content | html %]</td></tr>
+[%- END -%]
+[%- END -%]
+
+[%- FOREACH cat IN thisimage.meta -%]
+[%- category =  cat.key -%]
+[%- content  =  cat.value -%]
+[%- IF category == 'M0750' -%]
+<tr><td><b>Beschreibung</b></td><td align="left">[% content | html %]</td></tr>
+[%- END -%]
+[%- END -%]
+
+[%- FOREACH cat IN thisimage.meta -%]
+[%- category =  cat.key -%]
+[%- content  =  cat.value -%]
+[%- IF category == 'M0501' -%]
+<tr><td><b>Quelle</b></td><td align="left">[% content | html %]</td></tr>
+[%- END -%]
+[%- END -%]
+
+</table>
+</td><td><table><tr><td><span style="text-size:0.9em"><b>Aufl&ouml;sung</b></span></td><td>[% thisimage.res %]</td></tr><tr><td><span style="text-size:0.9em"><b>Dateigr&ouml;&szlig;e</b></span></td><td>[% thisimage.size / 1048576 |format ('%4.2f') %] MB</td></tr></table></td><tr>
+[%- IF listrow == 'listrow1' -%]
+[%- listrow = 'listrow2' -%]
+[%- ELSE -%]
+[%- listrow = 'listrow1' -%]
+[%- END -%]
+
+[%- END -%]

@@ -1,0 +1,36 @@
+[% show_foot_banner = 1 %]
+[% PROCESS common/subtemplate name="std_header" %]
+
+  <body bgcolor="#FFFFFF">
+
+[% PROCESS common/subtemplate name="corporate_banner" %]
+
+<ul id="tabbingmenu">
+   <li><a href="http://[% config.servername %][% config.viewer_loc %]?action=showcolls">Serienauswahl</a></li>   
+   <li><a class="active" href="http://[% config.servername %][% config.viewer_loc %]?collection=[% collection %];action=showsinglecoll">Serie: [% collection %]</a></li>
+
+</ul>
+
+<div id="content">
+<table width="100%">
+<tr><th>Recherche: [% collection %]</th></tr>
+
+<tr><td class="boxedclear" style="font-size:0.9em">
+
+<p />
+<form method="post" action="http://[% config.servername %][% config.viewer_loc %]" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="collection" value="[% collection %]">
+<input type="hidden" name="sessionID" value="[% sessionID %]">
+
+
+
+</form>
+</table>
+</td></tr>
+</table>
+
+</div>
+
+<p />
+
+[% PROCESS common/subtemplate name="std_footer" %]

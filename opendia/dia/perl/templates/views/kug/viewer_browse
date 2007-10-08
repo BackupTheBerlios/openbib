@@ -1,0 +1,92 @@
+[% show_foot_banner = 1 %]
+[% PROCESS common/subtemplate name="std_header" %]
+
+  <body>
+
+<ul id="tabbingmenu">
+   <li><a href="http://[% remotehost %]/portal/eingabe?sessionID=[% sessionID %];setmask=simple">Suchen</a></li>   
+   <li><a class="active" href="http://[% config.servername %][% config.viewer_loc %]?collection=einbaende;action=browse;browsecat=[% browsecat %];view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">Bl&auml;ttern</a></li>
+
+</ul>
+
+
+<div id="content">
+
+
+<ul id="tabbingmenu">
+   <li><a 
+[%- IF browsecat == 'M0101' -%]
+ class="active" 
+[%- END -%]
+ href="http://[% config.servername %][% config.viewer_loc %]?collection=einbaende;action=browse;browsecat=M0101;view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">Buchbinder/Werkstatt</a></li>
+   <li><a 
+[%- IF browsecat == 'M0700' -%]
+ class="active" 
+[%- END -%]
+ href="http://[% config.servername %][% config.viewer_loc %]?collection=einbaende;action=browse;browsecat=M0700;view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">Einband</a></li>
+   <li><a 
+[%- IF browsecat == 'M0200' -%]
+ class="active" 
+[%- END -%]
+ href="http://[% config.servername %][% config.viewer_loc %]?collection=einbaende;action=browse;browsecat=M0200;view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">Region</a></li>
+   <li><a 
+[%- IF browsecat == 'M0710' -%]
+ class="active" 
+[%- END -%]
+ href="http://[% config.servername %][% config.viewer_loc %]?collection=einbaende;action=browse;browsecat=M0710;view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">Jahrhundert</a></li>
+   <li><a 
+[%- IF browsecat == 'M0413' -%]
+ class="active" 
+[%- END -%]
+ href="http://[% config.servername %][% config.viewer_loc %]?collection=einbaende;action=browse;browsecat=M0413;view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">Drucker/Verleger/Verlag</a></li>
+</ul>
+
+<div id="content">
+
+
+<table width="100%">
+<tr><th>Auswahl</th></tr>
+
+<tr><td class="boxedclear" style="font-size:0.9em">
+
+<table>
+[% listrow = 'listrow1' -%]
+[%- FOREACH item IN items -%]
+[%- querycat = '' -%]
+[%- IF browsecat == 'M0101' -%]
+[%- querycat = ";verf=${item.webarg}" -%]
+[%- END %]
+[%- IF browsecat == 'M0700' %]
+[%- querycat = ";notation=${item.webarg}" -%]
+[%- END -%]
+[%- IF browsecat == 'M0710' -%]
+[%- querycat = ";swt=${item.webarg}" -%]
+[%- END -%]
+[%- IF browsecat == 'M0200' -%]
+[%- querycat = ";kor=${item.webarg}" -%]
+[%- END -%]
+[%- IF browsecat == 'M0413' -%]
+[%- querycat = ";verf=${item.webarg}" -%]
+[%- END %]
+<tr class="[% listrow %]"><td><a href="http://[% config.servername %][% config.viewer_loc %]?collection=einbaende;action=browse;browsecat=[% browsecat %];browsecontent=[% item.webarg %];view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">[% item.plain | html %]</a></td>
+[%- IF querycat -%]
+<td align="right" style="font-weight:bold">&nbsp;&nbsp;&nbsp;<a href="http://[% remotehost %]/portal/eingabe?sessionID=[% sessionID %][% querycat | replace('[(].*?[)]','') %]">&Uuml;bernahme&nbsp;in&nbsp;Recherche</a>&nbsp;&nbsp;&nbsp;</td>
+[%- END -%]
+</tr>
+[% IF listrow == 'listrow1' -%]
+[%- listrow = 'listrow2' -%]
+[%- ELSE -%]
+[%- listrow = 'listrow1' -%]
+[%- END -%]
+[%- END -%]
+</table>
+
+</td></tr>
+</table>
+
+</div>
+</div>
+
+<p />
+
+[% PROCESS common/subtemplate name="std_footer" %]

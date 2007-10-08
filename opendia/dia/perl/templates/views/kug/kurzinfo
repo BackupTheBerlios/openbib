@@ -1,0 +1,65 @@
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td colspan="2">&nbsp;</td></tr>
+<tr><td><b>Id</b></td><td colspan="2">[% item %]</td></tr>
+
+[%- FOREACH cat IN thismeta -%]
+[%- IF cat.category == 'M0101' -%]
+<tr><td><b>Buchbinder/Werkstatt</b></td><td colspan="2"><a href="http://[% config.servername %]/opendia/viewer?collection=einbaende;action=browse;browsecat=M0101;browsecontent=[% cat.webarg %];view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">[% cat.content | html %]</a></td></tr>
+[%- END -%]
+[%- END -%]
+
+[%- FOREACH cat IN thismeta -%]
+[%- IF cat.category == 'M0700' -%]
+<tr><td><b>Einband</b></td><td colspan="2"><a href="http://[% config.servername %]/opendia/viewer?collection=einbaende;action=browse;browsecat=M0700;browsecontent=[% cat.webarg %];view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">[% cat.content | html %]</a></td></tr>
+[%- END -%]
+[%- END -%]
+
+[%- FOREACH cat IN thismeta -%]
+[%- IF cat.category == 'M0710' -%]
+<tr><td><b>Jahrhundert</b></td><td colspan="2"><a href="http://[% config.servername %]/opendia/viewer?collection=einbaende;action=browse;browsecat=M0710;browsecontent=[% cat.webarg %];view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">[% cat.content | html %]</a></td></tr>
+[%- END -%]
+[%- END -%]
+
+[%- FOREACH cat IN thismeta -%]
+[%- IF cat.category == 'M0200' -%]
+<tr><td><b>Region</b></td><td colspan="2"><a href="http://[% config.servername %]/opendia/viewer?collection=einbaende;action=browse;browsecat=M0200;browsecontent=[% cat.webarg %];view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">[% cat.content | html %]</a></td></tr>
+[%- END -%]
+[%- END -%]
+
+[%- FOREACH cat IN thismeta -%]
+[%- IF cat.category == 'M0413' -%]
+<tr><td><b>Drucker/Verleger/Verlag</b></td><td colspan="2"><a href="http://[% config.servername %]/opendia/viewer?collection=einbaende;action=browse;browsecat=M0413;browsecontent=[% cat.webarg %];view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">[% cat.content | html %]</a></td></tr>
+[%- END -%]
+[%- END -%]
+
+[%- FOREACH cat IN thismeta -%]
+[%- IF cat.category == 'M0435' -%]
+<tr><td><b>Ma&szlig;e</b></td><td colspan="2">[% cat.content | html %]</td></tr>
+[%- END -%]
+[%- END -%]
+
+[%- FOREACH cat IN thismeta -%]
+[%- IF cat.category == 'M0014' -%]
+<tr><td><b>Signatur</b></td><td colspan="2">[% cat.content | html %]</td></tr>
+[%- END -%]
+[%- END -%]
+
+<tr><td><b>Anzahl Abbildungen</b></td><td colspan="2">[% thisimages.size %]</td></tr>
+
+[%- TRY -%]
+    [%- USE File "${config.collection_base_dir}/einbaende/$item/$item.pdf" -%]
+<tr><td><b>Beschreibung als PDF</b></td><td colspan="2"><a href="http://[% config.servername %]/digiarchive/einbaende/[% item %]/[% item %].pdf">[ Download ]</a></td></tr>
+<tr><td width="200"></td><td colspan="2"></td></tr>
+[%- CATCH -%]
+<tr><td width="200"></td><td colspan="2"></td></tr>
+[%- END -%]
+
+[%- TRY -%]
+    [%- USE File "${config.collection_base_dir}/einbaende/$item/biobibliographie.pdf" -%]
+<tr><td><b>Biobibliographie als PDF</b></td><td colspan="2"><a href="http://[% config.servername %]/digiarchive/einbaende/[% item %]/biobibliographie.pdf">[ Download ]</a></td></tr>
+<tr><td width="200"></td><td colspan="2"></td></tr>
+[%- CATCH -%]
+<tr><td width="200"></td><td colspan="2"></td></tr>
+[%- END -%]
+
+<tr><td colspan="3">&nbsp;</td></tr>
+

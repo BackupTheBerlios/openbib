@@ -1,0 +1,55 @@
+[% show_foot_banner = 1 %]
+[% PROCESS common/subtemplate name="std_header" %]
+
+  <body bgcolor="#FFFFFF">
+
+<ul id="tabbingmenu">
+   <li><a href="http://[% remotehost %]/portal/eingabe?sessionID=[% sessionID %];setmask=simple">Textbasierte Recherche</a></li>   
+   <li><a class="active" href="http://tsipouro.ub.uni-koeln.de/opendia/viewer?collection=einbaende;action=showsinglecoll;subaction=browsemask;view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">Abbildungsbasiertes Bl&auml;ttern</a></li>
+
+</ul>
+
+
+<div id="content">
+
+
+<ul id="tabbingmenu">
+   <li><a class="active" href="http://tsipouro.ub.uni-koeln.de/opendia/viewer?collection=einbaende;action=browse;browsecat=M0101;view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">Buchbinder/Werkstatt</a></li>
+   <li><a class="active" href="http://tsipouro.ub.uni-koeln.de/opendia/viewer?collection=einbaende;action=browse;browsecat=[% browsecat %];view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">Einband</a></li>
+   <li><a class="active" href="http://tsipouro.ub.uni-koeln.de/opendia/viewer?collection=einbaende;action=browse;browsecat=[% browsecat %];view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">Region</a></li>
+   <li><a class="active" href="http://tsipouro.ub.uni-koeln.de/opendia/viewer?collection=einbaende;action=browse;browsecat=[% browsecat %];view=kug;remotehost=[% remotehost %];sessionID=[% sessionID %]">Jahrhundert</a></li>
+</ul>
+
+<div id="content">
+
+
+<table width="100%">
+<tr><th>Bl&auml;ttern in den Abbildungen</th></tr>
+
+<tr><td class="boxedclear" style="font-size:0.9em">
+
+<p />
+<form method="post" action="http://[% config.servername %][% config.viewer_loc %]" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="collection" value="[% collection %]">
+<input type="hidden" name="action" value="browse">
+<input type="hidden" name="view" value="kug">
+<input type="hidden" name="sessionID" value="[% sessionID %]">
+
+<table>
+<tr><td>Bl&auml;ttern nach <b>Buchbinder/Werkstatt</b></td><td><input type="submit" name="browsebb" value="Los"></td></tr>
+<tr><td>Bl&auml;ttern nach <b>Einbandart</b></td><td><input type="submit" name="browseeinband" value="Los"></td></tr>
+<tr><td>Bl&auml;ttern nach <b>Jahrhundert</b></td><td><input type="submit" name="browsejahrhundert" value="Los"></td></tr>
+<tr><td>Bl&auml;ttern nach <b>Region</b></td><td><input type="submit" name="browseregion" value="Los"></td></tr>
+</table>
+
+</form>
+</table>
+</td></tr>
+</table>
+
+</div>
+</div>
+
+<p />
+
+[% PROCESS common/subtemplate name="std_footer" %]
