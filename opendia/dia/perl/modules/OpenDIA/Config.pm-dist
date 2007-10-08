@@ -52,13 +52,19 @@ use vars qw(%config);
 	   editor_loc    => '/opendia/editor',
 	   viewer_loc    => '/opendia/viewer',
 
+	   css_loc       => '/styles',
+
 	   # Pfad zur Konfigurationsdatei von Log4Perl
 	  
-           log4perl_path           => '/pfad/zu/opendia.log4perl',
+           log4perl_path           => '/opt/opendia/conf/opendia.log4perl',
 
 	   # Pfad zu den Portal-Templates (Template Toolkit)
 
-	   tt_include_path         => '/pfad/zu/opendia/templates',
+	   tt_include_path         => '/opt/opendia/templates',
+
+	   # Pfad zum Document Root
+
+	   document_root_path       => '/var/www',
 
 	   # Mapping der einzelnen Kompontenten zu ihren Templates
 
@@ -71,6 +77,10 @@ use vars qw(%config);
 
 	   tt_viewer_showallcolls_tname       => 'viewer_showallcolls',
 	   tt_viewer_showsinglecoll_tname     => 'viewer_showsinglecoll',
+	   tt_viewer_showsinglecoll_searchmask_tname       => 'viewer_showsinglecoll_searchmask',
+	   tt_viewer_showsinglecoll_browsemask_tname       => 'viewer_showsinglecoll_browsemask',
+	   tt_viewer_browse_tname             => 'viewer_browse',
+	   tt_viewer_browsecontent_tname      => 'viewer_browsecontent',
 	   tt_viewer_showsingleitem_tname     => 'viewer_showsingleitem',
 
 	   # Verschiedene Pfadangaben
@@ -79,371 +89,918 @@ use vars qw(%config);
            collection_base_dir     => '/var/www/digiarchive',
 
 	   importpool              =>
+               {
+                   einbaende =>
+                       {
+                           wsurl   => 'http://webservices.openbib.org/olws',
+                           dbname  => 'einbaende',
+                           mapping => 
+                               {
+                                   '0100' => 'M0100',
+                                   '0101' => 'M0101',
+                                   '0331' => 'M0331',
+                                   '0335' => 'M0335',
+                                   '0361' => 'M0361',
+                                   '0403' => 'M0403',
+                                   '0412' => 'M0412',
+                                   '0413' => 'M0413',
+                                   '0425' => 'M0425',
+                                   '0410' => 'M0410',
+                                   '0370' => 'M0370',
+                                   '0424' => 'M0424',
+                                   '0035' => 'M0035',
+                                   '0435' => 'M0435',
+                                   '0710' => 'M0710',
+                                   '0200' => 'M0200',
+                                   '0700' => 'M0700',
+                                   '0014' => 'M0014',
+                                   '0750' => 'M0750',
+                                   '0501' => 'M0501',
+                                   '0508' => 'M0508',
+                               },
+                       },
+                   
+                   portrait => 
+                       {
+                           wsurl   => 'http://firewater.ub.uni-koeln.de:8888/olws',
+                           dbname  => 'portrait',
+                           mapping => 
+                               {
+                                   '0100' => 'M0100',
+                                   '0101' => 'M0101',
+                                   '0102' => 'M0102',
+                                   '0103' => 'M0103',
+                                   '0200' => 'M0200',
+                                   '0201' => 'M0201',
+                                   '0331' => 'M0331',
+                                   '0334' => 'M0334',
+                                   '0335' => 'M0335',
+                                   '0359' => 'M0359',
+                                   '0410' => 'M0410',
+                                   '0412' => 'M0412',
+                                   '0425' => 'M0425',
+                                   '0433' => 'M0433',
+                                   '0501' => 'M0501',
+                                   '0700' => 'M0700',
+                                   '0710' => 'M0710',
+                                   '3001' => 'M3001',
+                                   '3330' => 'M3330',
+                                   '0800' => 'M0800',
+                                   '0508' => 'M0508',
+                                   '0662' => 'M0662',
+                               },
+                       },
 
-	   {
-	    # Serie/Collection
-	    einbaende => 
-	    {
-	     # URL des WebServices zur Katalogdatenuebernahme
-	     wsurl   => 'http://webservices.openbib.org/olws',
+                   landschaft => 
+                       {
+                           wsurl   => 'http://firewater.ub.uni-koeln.de:8888/olws',
+                           dbname  => 'landschaft',
+                           mapping => 
+                               {
+                                   '0100' => 'M0100',
+                                   '0101' => 'M0101',
+                                   '0102' => 'M0102',
+                                   '0103' => 'M0103',
+                                   '0200' => 'M0200',
+                                   '0201' => 'M0201',
+                                   '0331' => 'M0331',
+                                   '0334' => 'M0334',
+                                   '0335' => 'M0335',
+                                   '0359' => 'M0359',
+                                   '0410' => 'M0410',
+                                   '0412' => 'M0412',
+                                   '0425' => 'M0425',
+                                   '0433' => 'M0433',
+                                   '0501' => 'M0501',
+                                   '0700' => 'M0700',
+                                   '0710' => 'M0710',
+                                   '3001' => 'M3001',
+                                   '3330' => 'M3330',
+                                   '0800' => 'M0800',
+                                   '0508' => 'M0508',
+                                   '0662' => 'M0662',
+                               },
+                       },
 
-	     # Datenbankname
-	     dbname  => 'lokalerdbname',
+               },
 
-	     # Mapping der Katalogkategorien zu den internen Kategorien
-	     mapping => 
-	     {
-	      '0100' => 'M0100',
-	      '0101' => 'M0101',
-	      '0331' => 'M0331',
-	      '0335' => 'M0335',
-	      '0361' => 'M0361',
-	      '0403' => 'M0403',
-	      '0412' => 'M0412',
-	      '0413' => 'M0413',
-	      '0425' => 'M0425',
-	      '0410' => 'M0410',
-	      '0370' => 'M0370',
-	      '0424' => 'M0424',
-	      '0035' => 'M0035',
-	      '0435' => 'M0435',
-	      '0710' => 'M0710',
-	      '0200' => 'M0200',
-	      '0700' => 'M0700',
-	      '0014' => 'M0014',
-	      '0750' => 'M0750',
-	      '0501' => 'M0501',
-	      '0508' => 'M0508',
-	     },
-	     
-	    },
-	   },
-
-           # Default Metadatenformate fuer die einzelnen Serien
 	   metadefaults            =>
 
-	   {
-	    einbaende => 'emab',
-	   },
+               {
+                   einbaende  => 'emab',
+                   portrait   => 'pmab',
+                   landschaft => 'pmab',
+                   richter    => 'dc',
+               },
 
 	   metascheme              => 
+               
+               {
+                   # Collection
+                   einbaende => 
+                       {
+                           # Metaformat
+                           emab =>
+                               [
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 1,
+                                       # Kategorie
+                                       cat  => 'M0100',
+                                       # Bezeichnung
+                                       desc => 'Verfasser',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 2,
+                                       # Kategorie
+                                       cat  => 'M0101',
+                                       # Bezeichnung
+                                       desc => 'Person',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 3,
+                                       # Kategorie
+                                       cat  => 'M0331',
+                                       # Bezeichnung
+                                       desc => 'Titel',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 4,
+                                       # Kategorie
+                                       cat  => 'M0335',
+                                       # Bezeichnung
+                                       desc => 'Untertitel',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 5,
+                                       # Kategorie
+                                       cat  => 'M0361',
+                                       # Bezeichnung
+                                       desc => 'Beib&auml;nde',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 6,
+                                       # Kategorie
+                                       cat  => 'M0403',
+                                       # Bezeichnung
+                                       desc => 'Auflage',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 7,
+                                       # Kategorie
+                                       cat  => 'M0412',
+                                       # Bezeichnung
+                                       desc => 'Verlag',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 8,
+                                       # Kategorie
+                                       cat  => 'M0413',
+                                       # Bezeichnung
+                                       desc => 'Drucker',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 9,
+                                       # Kategorie
+                                       cat  => 'M0425',
+                                       # Bezeichnung
+                                       desc => 'E-Jahr',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 10,
+                                       # Kategorie
+                                       cat  => 'M0410',
+                                       # Bezeichnung
+                                       desc => 'ErschOrt',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 11,
+                                       # Kategorie
+                                       cat  => 'M0370',
+                                       # Bezeichnung
+                                       desc => 'Provinienz',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 12,
+                                       # Kategorie
+                                       cat  => 'M0424',
+                                       # Bezeichnung
+                                       desc => 'Fert.Jahr',
+                                       # Numerisch?
+                                       numeric => 1,
+                                       
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 13,
+                                       # Kategorie
+                                       cat  => 'M0035',
+                                       # Bezeichnung
+                                       desc => 'Fert.Ort',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 14,
+                                       # Kategorie
+                                       cat  => 'M0435',
+                                       # Bezeichnung
+                                       desc => 'Ma&szlig;e',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 15,
+                                       # Kategorie
+                                       cat  => 'M0710',
+                                       # Bezeichnung
+                                       desc => 'Jahrhundert',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 16,
+                                       # Kategorie
+                                       cat  => 'M0200',
+                                       # Bezeichnung
+                                       desc => 'Region',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 17,
+                                       # Kategorie
+                                       cat  => 'M0700',
+                                       # Bezeichnung
+                                       desc => 'Einband',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 18,
+                                       # Kategorie
+                                       cat  => 'M0014',
+                                       # Bezeichnung
+                                       desc => 'Signatur',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 19,
+                                       # Kategorie
+                                       cat  => 'M0750',
+                                       # Bezeichnung
+                                       desc => 'Beschreibung',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 20,
+                                       # Kategorie
+                                       cat  => 'M0501',
+                                       # Bezeichnung
+                                       desc => 'Quellen',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 21,
+                                       # Kategorie
+                                       cat  => 'M0508',
+                                       # Bezeichnung
+                                       desc => 'Bibl. Nachweis',
+                                   },
 
-	   {
-	    # Serie/Collection
-	    einbaende => 
-	    {
-	     # emab Metaformat - modifiziertes MAB2-Format fuer die
-	     #                   Beschreibung von Einband-Sammlungen
-	     emab =>
-	     [
-	      {
-	       # Ordnungsnummer
-	       nr   => 1,
-	       # Kategorie
-	       cat  => 'M0100',
-	       # Bezeichnung
-	       desc => 'Verfasser',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 2,
-	       # Kategorie
-	       cat  => 'M0101',
-	       # Bezeichnung
-	       desc => 'Person',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 3,
-	       # Kategorie
-	       cat  => 'M0331',
-	       # Bezeichnung
-	       desc => 'Titel',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 4,
-	       # Kategorie
-	       cat  => 'M0335',
-	       # Bezeichnung
-	       desc => 'Untertitel',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 5,
-	       # Kategorie
-	       cat  => 'M0361',
-	       # Bezeichnung
-	       desc => 'Beib&auml;nde',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 6,
-	       # Kategorie
-	       cat  => 'M0403',
-	       # Bezeichnung
-	       desc => 'Auflage',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 7,
-	       # Kategorie
-	       cat  => 'M0412',
-	       # Bezeichnung
-	       desc => 'Verlag',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 8,
-	       # Kategorie
-	       cat  => 'M0413',
-	       # Bezeichnung
-	       desc => 'Drucker',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 9,
-	       # Kategorie
-	       cat  => 'M0425',
-	       # Bezeichnung
-	       desc => 'E-Jahr',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 10,
-	       # Kategorie
-	       cat  => 'M0410',
-	       # Bezeichnung
-	       desc => 'ErschOrt',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 11,
-	       # Kategorie
-	       cat  => 'M0370',
-	       # Bezeichnung
-	       desc => 'Provinienz',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 12,
-	       # Kategorie
-	       cat  => 'M0424',
-	       # Bezeichnung
-	       desc => 'Fert.Jahr',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 13,
-	       # Kategorie
-	       cat  => 'M0035',
-	       # Bezeichnung
-	       desc => 'Fert.Ort',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 14,
-	       # Kategorie
-	       cat  => 'M0435',
-	       # Bezeichnung
-	       desc => 'Ma&szlig;e',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 15,
-	       # Kategorie
-	       cat  => 'M0710',
-	       # Bezeichnung
-	       desc => 'Jahrhundert',
-	      },
-	      	      {
-	       # Ordnungsnummer
-	       nr   => 16,
-	       # Kategorie
-	       cat  => 'M0200',
-	       # Bezeichnung
-	       desc => 'Region',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 17,
-	       # Kategorie
-	       cat  => 'M0700',
-	       # Bezeichnung
-	       desc => 'Einband',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 18,
-	       # Kategorie
-	       cat  => 'M0014',
-	       # Bezeichnung
-	       desc => 'Signatur',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 19,
-	       # Kategorie
-	       cat  => 'M0750',
-	       # Bezeichnung
-	       desc => 'Beschreibung',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 20,
-	       # Kategorie
-	       cat  => 'M0501',
-	       # Bezeichnung
-	       desc => 'Quellen',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 21,
-	       # Kategorie
-	       cat  => 'M0508',
-	       # Bezeichnung
-	       desc => 'Bibl. Nachweis',
-	      },
+                               ],	     
+                           # Metaformat
+                           dc =>
+                               [
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 1,
+                                       # Kategorie
+                                       cat  => 'DC.Title',
+                                       # Bezeichnung
+                                       desc => 'Titel',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 2,
+                                       # Kategorie
+                                       cat  => 'DC.Creator',
+                                       # Bezeichnung
+                                       desc => 'Autor',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 3,
+                                       # Kategorie
+                                       cat  => 'DC.Subject',
+                                       # Bezeichnung
+                                       desc => 'Schlagw&ouml;rter bzw. Klassifikation',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 4,
+                                       # Kategorie
+                                       cat  => 'DC.Description',
+                                       # Bezeichnung
+                                       desc => 'Inhaltliche Beschreibung',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 5,
+                                       # Kategorie
+                                       cat  => 'DC.Publisher',
+                                       # Bezeichnung
+                                       desc => 'Verleger / Herausgeber',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 6,
+                                       # Kategorie
+                                       cat  => 'DC.Contributors',
+                                       # Bezeichnung
+                                       desc => 'Sonstige Beteiligte',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 7,
+                                       # Kategorie
+                                       cat  => 'DC.Date',
+                                       # Bezeichnung
+                                       desc => 'Datum',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 8,
+                                       # Kategorie
+                                       cat  => 'DC.Type',
+                                       # Bezeichnung
+                                       desc => 'Ressourcenart',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 9,
+                                       # Kategorie
+                                       cat  => 'DC.Format',
+                                       # Bezeichnung
+                                       desc => 'Format',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 10,
+                                       # Kategorie
+                                       cat  => 'DC.Identifier',
+                                       # Bezeichnung
+                                       desc => 'Ressourcenidentifikation',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 11,
+                                       # Kategorie
+                                       cat  => 'DC.Source',
+                                       # Bezeichnung
+                                       desc => 'Quelle',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 12,
+                                       # Kategorie
+                                       cat  => 'DC.Language',
+                                       # Bezeichnung
+                                       desc => 'Sprache',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 13,
+                                       # Kategorie
+                                       cat  => 'DC.Relation',
+                                       # Bezeichnung
+                                       desc => 'Verh&auml;ltnis zu anderen Ressourcen',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 14,
+                                       # Kategorie
+                                       cat  => 'DC.Coverage',
+                                       # Bezeichnung
+                                       desc => 'Abdeckungsspektrum',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 15,
+                                       # Kategorie
+                                       cat  => 'DC.Rights',
+                                       # Bezeichnung
+                                       desc => 'Rechtliche Bedingungen',
+                                   },
+                               ],
 
-	     ],	     
+                       },
 
-	     # Dublin-Core Metaformat
-	     dc =>
-	     [
-	      {
-	       # Ordnungsnummer
-	       nr   => 1,
-	       # Kategorie
-	       cat  => 'DC.Title',
-	       # Bezeichnung
-	       desc => 'Titel',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 2,
-	       # Kategorie
-	       cat  => 'DC.Creator',
-	       # Bezeichnung
-	       desc => 'Autor',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 3,
-	       # Kategorie
-	       cat  => 'DC.Subject',
-	       # Bezeichnung
-	       desc => 'Schlagw&ouml;rter bzw. Klassifikation',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 4,
-	       # Kategorie
-	       cat  => 'DC.Description',
-	       # Bezeichnung
-	       desc => 'Inhaltliche Beschreibung',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 5,
-	       # Kategorie
-	       cat  => 'DC.Publisher',
-	       # Bezeichnung
-	       desc => 'Verleger / Herausgeber',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 6,
-	       # Kategorie
-	       cat  => 'DC.Contributors',
-	       # Bezeichnung
-	       desc => 'Sonstige Beteiligte',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 7,
-	       # Kategorie
-	       cat  => 'DC.Date',
-	       # Bezeichnung
-	       desc => 'Datum',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 8,
-	       # Kategorie
-	       cat  => 'DC.Type',
-	       # Bezeichnung
-	       desc => 'Ressourcenart',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 9,
-	       # Kategorie
-	       cat  => 'DC.Format',
-	       # Bezeichnung
-	       desc => 'Format',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 10,
-	       # Kategorie
-	       cat  => 'DC.Identifier',
-	       # Bezeichnung
-	       desc => 'Ressourcenidentifikation',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 11,
-	       # Kategorie
-	       cat  => 'DC.Source',
-	       # Bezeichnung
-	       desc => 'Quelle',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 12,
-	       # Kategorie
-	       cat  => 'DC.Language',
-	       # Bezeichnung
-	       desc => 'Sprache',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 13,
-	       # Kategorie
-	       cat  => 'DC.Relation',
-	       # Bezeichnung
-	       desc => 'Verh&auml;ltnis zu anderen Ressourcen',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 14,
-	       # Kategorie
-	       cat  => 'DC.Coverage',
-	       # Bezeichnung
-	       desc => 'Abdeckungsspektrum',
-	      },
-	      {
-	       # Ordnungsnummer
-	       nr   => 15,
-	       # Kategorie
-	       cat  => 'DC.Rights',
-	       # Bezeichnung
-	       desc => 'Rechtliche Bedingungen',
-	      },
-	     ],
+                   #######################################################
 
-	    },
+                   # Collection
+                   portrait => 
+                       {
+                           # Metaformat
+                           pmab =>
+                               [
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 1,
+                                       # Kategorie
+                                       cat  => 'M0100',
+                                       # Bezeichnung
+                                       desc => 'Maler, Zeichner, Fotograf',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 2,
+                                       # Kategorie
+                                       cat  => 'M0101',
+                                       # Bezeichnung
+                                       desc => 'Stecher, Lithograph',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 3,
+                                       # Kategorie
+                                       cat  => 'M0102',
+                                       # Bezeichnung
+                                       desc => 'Dargestellte Person',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 4,
+                                       # Kategorie
+                                       cat  => 'M0103',
+                                       # Bezeichnung
+                                       desc => 'Weitere Personen',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 5,
+                                       # Kategorie
+                                       cat  => 'M0201',
+                                       # Bezeichnung
+                                       desc => 'K&ouml;rperschaft',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 6,
+                                       # Kategorie
+                                       cat  => 'M0331',
+                                       # Bezeichnung
+                                       desc => 'Titel',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 7,
+                                       # Kategorie
+                                       cat  => 'M0334',
+                                       # Bezeichnung
+                                       desc => 'Material',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 8,
+                                       # Kategorie
+                                       cat  => 'M0335',
+                                       # Bezeichnung
+                                       desc => 'Zusatz',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 9,
+                                       # Kategorie
+                                       cat  => 'M0359',
+                                       # Bezeichnung
+                                       desc => 'Vorlageform',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 10,
+                                       # Kategorie
+                                       cat  => 'M0410',
+                                       # Bezeichnung
+                                       desc => 'Erscheinungsort',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 11,
+                                       # Kategorie
+                                       cat  => 'M0425',
+                                       # Bezeichnung
+                                       desc => 'Jahr',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 12,
+                                       # Kategorie
+                                       cat  => 'M0433',
+                                       # Bezeichnung
+                                       desc => 'Umfang',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 13,
+                                       # Kategorie
+                                       cat  => 'M0501',
+                                       # Bezeichnung
+                                       desc => 'Lebensdaten',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 14,
+                                       # Kategorie
+                                       cat  => 'M0700',
+                                       # Bezeichnung
+                                       desc => 'Beruf / Weltanschauung',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 15,
+                                       # Kategorie
+                                       cat  => 'M0710',
+                                       # Bezeichnung
+                                       desc => 'Region',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 16,
+                                       # Kategorie
+                                       cat  => 'M3001',
+                                       # Bezeichnung
+                                       desc => 'AltSign',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 17,
+                                       # Kategorie
+                                       cat  => 'M3330',
+                                       # Bezeichnung
+                                       desc => 'Besitzer',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 18,
+                                       # Kategorie
+                                       cat  => 'M0800',
+                                       # Bezeichnung
+                                       desc => 'Medienart',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 19,
+                                       # Kategorie
+                                       cat  => 'M0508',
+                                       # Bezeichnung
+                                       desc => 'Bibl. Nachweis',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 20,
+                                       # Kategorie
+                                       cat  => 'M662',
+                                       # Bezeichnung
+                                       desc => 'Wikipedia',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 21,
+                                       # Kategorie
+                                       cat  => 'M0200',
+                                       # Bezeichnung
+                                       desc => 'Provenienz',
+                                   },
 
-	     # XML-Metaformat (RDF) fuer Dublin Core Daten
+                               ],	     
+                       },
 
-	     dcxml =>
-	     [
-	     ],
+
+                   #######################################################
+                   
+                   # Collection
+                   landschaft => 
+                       {
+                           # Metaformat
+                           pmab =>
+                               [
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 1,
+                                       # Kategorie
+                                       cat  => 'M0100',
+                                       # Bezeichnung
+                                       desc => 'Maler, Zeichner, Fotograf',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 2,
+                                       # Kategorie
+                                       cat  => 'M0101',
+                                       # Bezeichnung
+                                       desc => 'Stecher, Lithograph',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 3,
+                                       # Kategorie
+                                       cat  => 'M0102',
+                                       # Bezeichnung
+                                       desc => 'Dargestellte Person',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 4,
+                                       # Kategorie
+                                       cat  => 'M0103',
+                                       # Bezeichnung
+                                       desc => 'Weitere Personen',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 5,
+                                       # Kategorie
+                                       cat  => 'M0201',
+                                       # Bezeichnung
+                                       desc => 'K&ouml;rperschaft',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 6,
+                                       # Kategorie
+                                       cat  => 'M0331',
+                                       # Bezeichnung
+                                       desc => 'Titel',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 7,
+                                       # Kategorie
+                                       cat  => 'M0334',
+                                       # Bezeichnung
+                                       desc => 'Material',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 8,
+                                       # Kategorie
+                                       cat  => 'M0335',
+                                       # Bezeichnung
+                                       desc => 'Zusatz',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 9,
+                                       # Kategorie
+                                       cat  => 'M0359',
+                                       # Bezeichnung
+                                       desc => 'Vorlageform',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 10,
+                                       # Kategorie
+                                       cat  => 'M0410',
+                                       # Bezeichnung
+                                       desc => 'Erscheinungsort',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 11,
+                                       # Kategorie
+                                       cat  => 'M0425',
+                                       # Bezeichnung
+                                       desc => 'Jahr',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 12,
+                                       # Kategorie
+                                       cat  => 'M0433',
+                                       # Bezeichnung
+                                       desc => 'Umfang',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 13,
+                                       # Kategorie
+                                       cat  => 'M0501',
+                                       # Bezeichnung
+                                       desc => 'Lebensdaten',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 14,
+                                       # Kategorie
+                                       cat  => 'M0700',
+                                       # Bezeichnung
+                                       desc => 'Beruf / Weltanschauung',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 15,
+                                       # Kategorie
+                                       cat  => 'M0710',
+                                       # Bezeichnung
+                                       desc => 'Region',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 16,
+                                       # Kategorie
+                                       cat  => 'M3001',
+                                       # Bezeichnung
+                                       desc => 'AltSign',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 17,
+                                       # Kategorie
+                                       cat  => 'M3330',
+                                       # Bezeichnung
+                                       desc => 'Besitzer',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 18,
+                                       # Kategorie
+                                       cat  => 'M0800',
+                                       # Bezeichnung
+                                       desc => 'Medienart',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 19,
+                                       # Kategorie
+                                       cat  => 'M0508',
+                                       # Bezeichnung
+                                       desc => 'Bibl. Nachweis',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 20,
+                                       # Kategorie
+                                       cat  => 'M662',
+                                       # Bezeichnung
+                                       desc => 'Wikipedia',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 21,
+                                       # Kategorie
+                                       cat  => 'M0200',
+                                       # Bezeichnung
+                                       desc => 'Provenienz',
+                                   },
+
+                               ],	     
+                       },
+
+                   # Collection
+                   richter => 
+                       {
+                           # Metaformat
+                           dc =>
+                               [
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 1,
+                                       # Kategorie
+                                       cat  => 'DC.Title',
+                                       # Bezeichnung
+                                       desc => 'Titel',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 2,
+                                       # Kategorie
+                                       cat  => 'DC.Creator',
+                                       # Bezeichnung
+                                       desc => 'Autor',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 3,
+                                       # Kategorie
+                                       cat  => 'DC.Subject',
+                                       # Bezeichnung
+                                       desc => 'Schlagw&ouml;rter bzw. Klassifikation',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 4,
+                                       # Kategorie
+                                       cat  => 'DC.Description',
+                                       # Bezeichnung
+                                       desc => 'Inhaltliche Beschreibung',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 5,
+                                       # Kategorie
+                                       cat  => 'DC.Publisher',
+                                       # Bezeichnung
+                                       desc => 'Verleger / Herausgeber',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 6,
+                                       # Kategorie
+                                       cat  => 'DC.Contributors',
+                                       # Bezeichnung
+                                       desc => 'Sonstige Beteiligte',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 7,
+                                       # Kategorie
+                                       cat  => 'DC.Date',
+                                       # Bezeichnung
+                                       desc => 'Datum',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 8,
+                                       # Kategorie
+                                       cat  => 'DC.Type',
+                                       # Bezeichnung
+                                       desc => 'Ressourcenart',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 9,
+                                       # Kategorie
+                                       cat  => 'DC.Format',
+                                       # Bezeichnung
+                                       desc => 'Format',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 10,
+                                       # Kategorie
+                                       cat  => 'DC.Identifier',
+                                       # Bezeichnung
+                                       desc => 'Ressourcenidentifikation',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 11,
+                                       # Kategorie
+                                       cat  => 'DC.Source',
+                                       # Bezeichnung
+                                       desc => 'Quelle',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 12,
+                                       # Kategorie
+                                       cat  => 'DC.Language',
+                                       # Bezeichnung
+                                       desc => 'Sprache',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 13,
+                                       # Kategorie
+                                       cat  => 'DC.Relation',
+                                       # Bezeichnung
+                                       desc => 'Verh&auml;ltnis zu anderen Ressourcen',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 14,
+                                       # Kategorie
+                                       cat  => 'DC.Coverage',
+                                       # Bezeichnung
+                                       desc => 'Abdeckungsspektrum',
+                                   },
+                                   {
+                                       # Ordnungsnummer
+                                       nr   => 15,
+                                       # Kategorie
+                                       cat  => 'DC.Rights',
+                                       # Bezeichnung
+                                       desc => 'Rechtliche Bedingungen',
+                                   },
+                               ],
 	     
-	    },
+                           # Metaformat
+
+                           xml =>
+                               [
+                               ],
+	     
+                       },
 
 
-	   },
+               },
 
 
 );
