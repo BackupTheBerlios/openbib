@@ -2,14 +2,19 @@
     <table  border="0" cellspacing="0" cellpadding="0" width="100%">
 	<tr>
 	  <td align="left" width="30%">
-	      <table><tr><td rowspan="2" valign="bottom"><a target="_blank" href="http://opendia.openbib.org/projekt/"><img src="/images/opendia/logo.png" border="0" alt="OpenDIA"/></a></td><td valign="bottom"><img src="/images/opendia/logozeile1.png" border="0" alt="Open Digital" /></td></tr><tr><td valign="top"><img src="/images/opendia/logozeile2.png" border="0" alt="Information/Image Archive" /></td></tr></table>
+	      <table><tr><td rowspan="2" valign="bottom"><a target="_blank" href="http://kug.ub.uni-koeln.de/projekt/"><img src="/images/openbib/logo.png" border="0" alt="KUG"/></a></td><td valign="bottom"><img src="/images/openbib/logozeile1.png" border="0" alt="K&ouml;lner" /></td></tr><tr><td valign="top"><img src="/images/openbib/logozeile2.png" border="0" alt="Universit&auml;tsGesamtkatalog" /></td></tr></table>
 	  </td>
 
 	  <td width="50%"> &nbsp;&nbsp;</td>
 	  
 	  <td align="right" width="20%">
-	    <a target="_top" href="http://www.uni-koeln.de/"><img src="/images/opendia/logorechts.png" height="95" border="0" alt="Rechtes Logo" /></a>
+	    <a target="_top" href="http://www.uni-koeln.de/"><img src="/images/openbib/logorechts.png" height="95" border="0" alt="Goldenes Universit&auml;tssigel" /></a>
 	  </td>
 	</tr>
+	[% IF view %]
+        <tr>
+  	  <td colspan="3" align="left"><img src="/images/openbib/views/[% view %].png" /></td>
+	</tr>
+        [% END %]
     </table>
 <!-- End Template: corporate_banner -->

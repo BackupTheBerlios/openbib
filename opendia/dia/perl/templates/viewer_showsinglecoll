@@ -20,9 +20,10 @@
 <form method="post" action="http://[% config.servername %][% config.viewer_loc %]" enctype="application/x-www-form-urlencoded">
 <input type="hidden" name="collection" value="[% collection %]">
 
-<table>
+<table cellpadding=4>
+[% bgcolor = 'aliceblue' %]
 [% FOREACH item IN items %]
-<tr><td><img src="/images/opendia/arrow.gif"></td><td><a href="http://[% config.servername %][% config.editor_loc %]?collection=[%collection%];item=[% item.name %];action=showitem">
+<tr bgcolor=[% bgcolor %]><td><img src="/images/opendia/arrow.gif"></td><td>
 [% SET catvar = 'DC.Title'  %]
 [% title = item.meta.$catvar ? item.meta.$catvar : '' %]
 
@@ -36,15 +37,21 @@
 [% author = item.meta.$catvar ? item.meta.$catvar : author %]
 
 [% IF author %]
-[% author %] :
+[% author %]<br />
 [% END %]
 
+<a href="http://[% config.servername %][% config.viewer_loc %]?collection=[%collection%];item=[% item.name %];action=showsingleitem">
 [% IF title %]
 [% title %]
 [% ELSE %]
 [% item.name %]
 [% END %]
 </a></td></tr>
+[% IF bgcolor == 'white' %]
+[% bgcolor = 'aliceblue' %]
+[% ELSE %]
+[% bgcolor = 'white' %]
+[% END %]
 [% END %]
 </table>
 

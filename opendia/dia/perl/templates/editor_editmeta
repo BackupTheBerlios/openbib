@@ -119,12 +119,29 @@
 ;image=[% image %]
 [%- END -%]
 ;meta=emab
-">MAB/Einb&auml;nde</a></li>
+">MAB/Portrait</a></li>
+[% END %]
+[% IF config.metascheme.$collection.pmab %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=pmab
+">MAB/Portrait</a></li>
 [% END %]
 </ul>
 
 <div id="content">
-<form method="get" action="http://[% config.servername %][% config.editor_loc %]">
+<form method="post" action="http://[% config.servername %][% config.editor_loc %]">
 <input type="hidden" name="collection" value="[% collection %]">
 <input type="hidden" name="item" value="[% item %]">
 <input type="hidden" name="sub" value="[% sub %]">
@@ -196,6 +213,23 @@
 ;meta=emab
 ">MAB/Einb&auml;nde</a></li>
 [% END %]
+[% IF config.metascheme.$collection.pmab %]
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=pmab
+">MAB/Portrait</a></li>
+[% END %]
 </ul>
 
 <div id="content">
@@ -261,7 +295,82 @@
 </ul>
 
 <div id="content">
-<form method="get" action="http://[% config.servername %][% config.editor_loc %]">
+<form method="post" action="http://[% config.servername %][% config.editor_loc %]">
+<input type="hidden" name="collection" value="[% collection %]">
+<input type="hidden" name="item" value="[% item %]">
+<input type="hidden" name="sub" value="[% sub %]">
+<input type="hidden" name="sub1" value="[% sub1 %]">
+<input type="hidden" name="sub2" value="[% sub2 %]">
+<input type="hidden" name="image" value="[% image %]">
+<input type="hidden" name="meta" value="[% meta %]">
+<input type="hidden" name="action" value="savemeta">
+
+[% PROCESS metaformat_emab %]
+
+<p />
+<input type="submit" value="Speichern">
+</form>
+
+</div>
+[% END %]
+
+[% IF config.metascheme.$collection.$meta && meta == 'pmab' %]
+<ul id="tabbingmenu">
+[% IF config.metascheme.$collection.dc %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=dc
+">Dublin Core</a></li>
+[% END %]
+[% IF config.metascheme.$collection.xml %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=xml
+">XML</a></li>
+[% END %]
+[% IF config.metascheme.$collection.pmab %]
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=pmab
+">MAB/Portrait</a></li>
+[% END %]
+</ul>
+
+<div id="content">
+<form method="post" action="http://[% config.servername %][% config.editor_loc %]">
 <input type="hidden" name="collection" value="[% collection %]">
 <input type="hidden" name="item" value="[% item %]">
 <input type="hidden" name="sub" value="[% sub %]">
@@ -348,10 +457,27 @@
 ;meta=emab
 ">MAB/Einb&auml;nde</a></li>
 [% END %]
+[% IF config.metascheme.$collection.pmab %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=pmab
+">MAB/Portrait</a></li>
+[% END %]
 </ul>
 
 <div id="content">
-<form method="get" action="http://[% config.servername %][% config.editor_loc %]">
+<form method="post" action="http://[% config.servername %][% config.editor_loc %]">
 <input type="hidden" name="collection" value="[% collection %]">
 <input type="hidden" name="item" value="[% item %]">
 <input type="hidden" name="sub" value="[% sub %]">
@@ -487,7 +613,95 @@
 </ul>
 
 <div id="content">
+<form method="post" action="http://[% config.servername %][% config.editor_loc %]">
+<input type="hidden" name="collection" value="[% collection %]">
+<input type="hidden" name="item" value="[% item %]">
+<input type="hidden" name="sub" value="[% sub %]">
+<input type="hidden" name="sub1" value="[% sub1 %]">
+<input type="hidden" name="sub2" value="[% sub2 %]">
+<input type="hidden" name="image" value="[% image %]">
+<input type="hidden" name="meta" value="[% meta %]">
+<input type="hidden" name="action" value="savemeta">
+
+[% PROCESS metaformat_emab %]
+
+<p />
+<input type="submit" value="Speichern">
+</form>
+
+[% IF NOT sub && NOT sub1 && NOT sub2 %]
 <form method="get" action="http://[% config.servername %][% config.editor_loc %]">
+<input type="hidden" name="collection" value="[% collection %]">
+<input type="hidden" name="item" value="[% item %]">
+<input type="hidden" name="sub" value="[% sub %]">
+<input type="hidden" name="sub1" value="[% sub1 %]">
+<input type="hidden" name="sub2" value="[% sub2 %]">
+<input type="hidden" name="image" value="[% image %]">
+<input type="hidden" name="meta" value="[% meta %]">
+<input type="hidden" name="action" value="importpool">
+<input type="submit" value="&Uuml;bernahme aus Katalog">
+</form>
+[% END %]
+</div>
+[% END %]
+
+[% IF config.metascheme.$collection.$meta && meta == 'pmab' %]
+<ul id="tabbingmenu">
+[% IF config.metascheme.$collection.dc %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=dc
+">Dublin Core</a></li>
+[% END %]
+[% IF config.metascheme.$collection.xml %]
+   <li><a href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=xml
+">XML</a></li>
+[% END %]
+[% IF config.metascheme.$collection.pmab %]
+   <li><a class="active" href="http://[% config.servername %][% config.editor_loc %]?action=editmeta;collection=[% collection %];item=[% item %]
+[%- IF sub -%]
+;sub=[% sub %]
+[%- END -%]
+[%- IF sub1 -%]
+;sub1=[% sub1 %]
+[%- END -%]
+[%- IF sub2 -%]
+;sub2=[% sub2 %]
+[%- END -%]
+[%- IF image -%]
+;image=[% image %]
+[%- END -%]
+;meta=pmab
+">MAB/Portrait</a></li>
+[% END %]
+</ul>
+
+<div id="content">
+<form method="post" action="http://[% config.servername %][% config.editor_loc %]">
 <input type="hidden" name="collection" value="[% collection %]">
 <input type="hidden" name="item" value="[% item %]">
 <input type="hidden" name="sub" value="[% sub %]">
