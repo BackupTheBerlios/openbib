@@ -1,0 +1,60 @@
+[% PROCESS std_header %]
+
+  <body bgcolor="#FFFFFF">
+
+[% PROCESS corporate_banner %]
+
+<ul id="tabbingmenu">
+   <li><a href="http://[% config.servername %][% config.viewer_loc %]?action=showcolls">Serienauswahl</a></li>   
+   <li><a class="active" href="http://[% config.servername %][% config.viewer_loc %]?collection=[% collection %];action=showsinglecoll">Serie: [% collection %]</a></li>
+
+</ul>
+
+<div id="content">
+<table width="100%">
+<tr><th>Aktuelle Digitalisat-Serie: [% collection %]</th></tr>
+
+<tr><td class="boxedclear" style="font-size:0.9em">
+
+<p />
+<form method="post" action="http://[% config.servername %][% config.viewer_loc %]" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="collection" value="[% collection %]">
+
+<table>
+[% FOREACH item IN items %]
+<tr><td><img src="/images/opendia/arrow.gif"></td><td><a href="http://[% config.servername %][% config.viewer_loc %]?collection=[%collection%];item=[% item.name %];action=showitem">
+[% SET catvar = 'DC.Title'  %]
+[% title = item.meta.$catvar ? item.meta.$catvar : '' %]
+
+[% SET catvar = 'M0331'  %]
+[% title = item.meta.$catvar ? item.meta.$catvar : title %]
+
+[% SET catvar = 'DC.Creator'  %]
+[% author = item.meta.$catvar ? item.meta.$catvar : '' %]
+
+[% SET catvar = 'M0100'  %]
+[% author = item.meta.$catvar ? item.meta.$catvar : author %]
+
+[% IF author %]
+[% author %] :
+[% END %]
+
+[% IF title %]
+[% title %]
+[% ELSE %]
+[% item.name %]
+[% END %]
+</a></td></tr>
+[% END %]
+</table>
+
+</form>
+</table>
+</td></tr>
+</table>
+
+</div>
+
+<p />
+
+[% PROCESS std_footer %]

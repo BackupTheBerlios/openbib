@@ -1,0 +1,30 @@
+[% PROCESS std_header %]
+
+  <body bgcolor="#FFFFFF">
+
+<ul id="tabbingmenu">
+   <li><a href="http://[% remotehost %]/portal/eingabe?sessionID=[% sessionID %];view=[% remoteview %];setmask=simple">Textbasierte Recherche</a></li>   
+   <li><a class="active" href="http://[% servername %][% viewer_loc %]?collection=einbaende;action=showsinglecoll;subaction=browsemask;view=kug;remotehost=[% remotehost %];remoteview=[% remoteview %];sessionID=[% sessionID %]">Abbildungsbasierte Recherche</a></li>
+
+</ul>
+
+
+<div id="content">
+<table width="100%">
+<tr><th>Bl&auml;ttern nach [% browsekriterium %]</th></tr>
+
+<tr><td class="boxedclear" style="font-size:0.9em">
+
+<table>
+[% FOREACH item IN items %]
+<tr><td>[% item %]</td></tr>
+[% END %]
+</table>
+</td></tr>
+</table>
+
+</div>
+
+<p />
+
+[% PROCESS std_footer %]
