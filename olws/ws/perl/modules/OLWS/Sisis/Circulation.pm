@@ -185,11 +185,12 @@ sub get_reservations {
   my $logger = get_logger();
 
   my $sql_statement = qq{
-  select * 
+  select d01ort, d04katkey, d04gsi, d04vmdatum, d04aufrecht 
 
-  from $database.sisis.d04vorm 
+  from $database.sisis.d04vorm, $database.sisis.d01buch
 
-  where d04bnr = ?
+  where d01gsi=d04gsi
+    and d04bnr = ?
   };
   
   my $request=$self->{dbh}->prepare($sql_statement);
@@ -242,13 +243,14 @@ sub get_reservations {
     my $vormerkdatum  = OLWS::Common::Utils::conv_date($res->{'d04vmdatum'});
     my $aufrechtdatum = OLWS::Common::Utils::conv_date($res->{'d04aufrecht'});
     my $mediennummer  = $res->{'d04gsi'};
+    my $signatur      = $res->{'d01ort'};
     
     my $singlereservation_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
 		SOAP::Data->name(Katkey          => $katkey)->type('string'),
 		SOAP::Data->name(Verfasser       => $title_ref->{Verfasser})->type('string'),
 		SOAP::Data->name(Titel           => $title_ref->{Titel})->type('string'),
 		SOAP::Data->name(EJahr           => $title_ref->{EJahr})->type('string'),
-#		SOAP::Data->name(Signatur        => $signatur)->type('string'),
+		SOAP::Data->name(Signatur        => $signatur)->type('string'),
 #		SOAP::Data->name(MTyp            => $mtyp)->type('string'),
 		SOAP::Data->name(Mediennummer    => $mediennummer)->type('string'),
 		SOAP::Data->name(VormerkDatum    => $vormerkdatum)->type('string'),
@@ -454,6 +456,7 @@ sub make_reservation {
 
   my $username     = $args_ref->{username};
   my $password     = $args_ref->{password};
+  my $database     = $args_ref->{database};
   my $mediennummer = $args_ref->{mediennummer};
   my $zweigstelle  = $args_ref->{zweigstelle};
   my $ausgabeort   = $args_ref->{ausgabeort};
@@ -462,7 +465,7 @@ sub make_reservation {
 
   my $logger = get_logger();
  
-  my $response_ref = OLWS::Common::SLNP::Circulation::make_reservation($username, $mediennummer, $zweigstelle, $ausgabeort);
+  my $response_ref = OLWS::Common::SLNP::Circulation::make_reservation($username, $database, $mediennummer, $zweigstelle, $ausgabeort);
 
   return $response_ref;
 }
