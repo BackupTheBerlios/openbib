@@ -46,49 +46,49 @@ sub get_native_title_by_katkey {
     my ($self,$arg_ref) = @_;
 
     my $backend="OLWS::$config{backend}::Media";
-    return $backend->get_native_title_by_katkey($arg_ref);
+    return $backend->new($arg_ref->{database})->get_native_title_by_katkey($arg_ref);
 }
 
 sub get_raw_tit_by_katkey {
     my ($self,$arg_ref) = @_;
 
     my $backend="OLWS::$config{backend}::Media";
-    return $backend->get_raw_title_by_katkey($arg_ref);
+    return $backend->new($arg_ref->{database})->get_raw_title_by_katkey($arg_ref);
 }
 
 sub get_raw_aut_by_katkey {
     my ($self,$arg_ref) = @_;
 
     my $backend="OLWS::$config{backend}::Media";
-    return $backend->get_raw_aut_by_katkey($arg_ref);
+    return $backend->new($arg_ref->{database})->get_raw_aut_by_katkey($arg_ref);
 }
 
 sub get_raw_kor_by_katkey {
     my ($self,$arg_ref) = @_;
 
     my $backend="OLWS::$config{backend}::Media";
-    return $backend->get_raw_kor_by_katkey($arg_ref);
+    return $backend->new($arg_ref->{database})->get_raw_kor_by_katkey($arg_ref);
 }
 
 sub get_raw_swt_by_katkey {
     my ($self,$arg_ref) = @_;
 
     my $backend="OLWS::$config{backend}::Media";
-    return $backend->get_raw_swt_by_katkey($arg_ref);
+    return $backend->new($arg_ref->{database})->get_raw_swt_by_katkey($arg_ref);
 }
 
 sub get_raw_not_by_katkey {
     my ($self,$arg_ref) = @_;
 
     my $backend="OLWS::$config{backend}::Media";
-    return $backend->get_raw_not_by_katkey($arg_ref);
+    return $backend->new($arg_ref->{database})->get_raw_not_by_katkey($arg_ref);
 }
 
 sub get_title_katkeys_by_date {
     my ($self,$arg_ref) = @_;
 
     my $backend="OLWS::$config{backend}::Media";
-    return $backend->get_title_katkeys_by_date($arg_ref);
+    return $backend->new($arg_ref->{database})->get_title_katkeys_by_date($arg_ref);
 }
 
 1;
