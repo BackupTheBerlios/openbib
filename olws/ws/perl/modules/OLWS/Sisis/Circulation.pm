@@ -185,7 +185,7 @@ sub get_reservations {
   my $logger = get_logger();
 
   my $sql_statement = qq{
-  select d01ort, d04katkey, d04gsi, d04vmdatum, d04aufrecht 
+  select d01ort, d04katkey, d04gsi, d04vmdatum, d04aufrecht, d04zweig 
 
   from $database.sisis.d04vorm, $database.sisis.d01buch
 
@@ -194,7 +194,6 @@ sub get_reservations {
   };
   
   my $request=$self->{dbh}->prepare($sql_statement);
-  $request->execute($username) or $logger->error_die($DBI::errstr);
 
   $sql_statement = qq{
   select * 
@@ -209,6 +208,8 @@ sub get_reservations {
   my $request2=$self->{dbh}->prepare($sql_statement);  
 
   my @reservationlist=();
+
+  $request->execute($username) or $logger->error_die($DBI::errstr);
   
   while (my $res=$request->fetchrow_hashref()){
     
@@ -234,7 +235,6 @@ sub get_reservations {
 
       if ($bnr eq $username){
         $stelle=$counter;
-        last;
       }
 
       $counter++;
@@ -244,6 +244,7 @@ sub get_reservations {
     my $aufrechtdatum = OLWS::Common::Utils::conv_date($res->{'d04aufrecht'});
     my $mediennummer  = $res->{'d04gsi'};
     my $signatur      = $res->{'d01ort'};
+    my $zweigstelle   = $res->{'d04zweig'};
     
     my $singlereservation_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
 		SOAP::Data->name(Katkey          => $katkey)->type('string'),
@@ -255,6 +256,7 @@ sub get_reservations {
 		SOAP::Data->name(Mediennummer    => $mediennummer)->type('string'),
 		SOAP::Data->name(VormerkDatum    => $vormerkdatum)->type('string'),
 		SOAP::Data->name(AufrechtDatum   => $aufrechtdatum)->type('string'),
+		SOAP::Data->name(Zweigstelle     => $zweigstelle)->type('string'),
 		SOAP::Data->name(Stelle          => $stelle)->type('int'),	));
     
     push @reservationlist, $singlereservation_ref;    
@@ -390,7 +392,7 @@ sub get_borrows {
 	database => $database,
 	sikfstab => $self->{sikfstab},
 	});
-    
+
     my $singleborrow_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
 		SOAP::Data->name(Katkey          => $katkey)->type('string'),
 		SOAP::Data->name(Verfasser       => $title_ref->{Verfasser})->type('string'),
@@ -466,6 +468,59 @@ sub make_reservation {
   my $logger = get_logger();
  
   my $response_ref = OLWS::Common::SLNP::Circulation::make_reservation($username, $database, $mediennummer, $zweigstelle, $ausgabeort);
+
+  return $response_ref;
+}
+
+sub cancel_reservation {
+  my ($class, $args_ref) = @_;
+
+  my $username     = $args_ref->{username};
+  my $password     = $args_ref->{password};
+  my $database     = $args_ref->{database};
+  my $mediennummer = $args_ref->{mediennummer};
+  my $zweigstelle  = $args_ref->{zweigstelle};
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
+ 
+  my $response_ref = OLWS::Common::SLNP::Circulation::cancel_reservation($username, $database, $mediennummer, $zweigstelle);
+
+  return $response_ref;
+}
+
+sub make_order {
+  my ($class, $args_ref) = @_;
+
+  my $username     = $args_ref->{username};
+  my $password     = $args_ref->{password};
+  my $database     = $args_ref->{database};
+  my $mediennummer = $args_ref->{mediennummer};
+  my $zweigstelle  = $args_ref->{zweigstelle};
+  my $ausgabeort   = $args_ref->{ausgabeort};
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
+ 
+  my $response_ref = OLWS::Common::SLNP::Circulation::make_order($username, $database, $mediennummer, $zweigstelle, $ausgabeort);
+
+  return $response_ref;
+}
+
+sub renew_loans {
+  my ($class, $args_ref) = @_;
+
+  my $username     = $args_ref->{username};
+  my $password     = $args_ref->{password};
+  my $database     = $args_ref->{database};
+
+  # Log4perl logger erzeugen
+
+  my $logger = get_logger();
+ 
+  my $response_ref = OLWS::Common::SLNP::Circulation::renew_loans($username, $database);
 
   return $response_ref;
 }

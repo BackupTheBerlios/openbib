@@ -108,4 +108,31 @@ sub make_reservation {
     return $backend->make_reservation($arg_ref);
 }
 
+# Vormerken wiederrufen
+sub cancel_reservation {
+    my ($self,$arg_ref) = @_;
+
+    my $backend="OLWS::$config{backend}::Circulation";
+
+    return $backend->cancel_reservation($arg_ref);
+}
+
+# Titel bestellen
+sub make_order {
+    my ($self,$arg_ref) = @_;
+
+    my $backend="OLWS::$config{backend}::Circulation";
+
+    return $backend->make_order($arg_ref);
+}
+
+# Gesamtkonto verlaengern
+sub renew_loans {
+    my ($self,$arg_ref) = @_;
+
+    my $backend="OLWS::$config{backend}::Circulation";
+
+    return $backend->renew_loans($arg_ref);
+}
+
 1;
