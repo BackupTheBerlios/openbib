@@ -54,6 +54,14 @@ sub get_mediastatus {
   my $logger = get_logger();
   
   $logger->info("Request for Database: $database - Katkey: $katkey");
+
+  my $entl_map_ref = {
+      'X' => 0, # nein
+      ' ' => 1, # ja
+      'L' => 2, # Lesesaal
+      'B' => 3, # Bes. Lesesaal
+      'W' => 4, # Wochenende
+  };
   
   #####################################################################
   # Verbindung zur SQL-Datenbank herstellen
@@ -87,13 +95,31 @@ sub get_mediastatus {
   while (my $res=$request->fetchrow_hashref()){
     $abteilung{$res->{'d60zweig'}}{$res->{'d60abt'}}=$res->{'d60bezeich'};
   }
+
+  $sql_statement = qq{
+  select * 
+
+  from $database.sisis.d63mtyp
+  };
+
+  $request=$dbh->prepare($sql_statement);
+  $request->execute() or $logger->error_die($DBI::errstr);
+  
+  my $mtyp_ref = {};
+  while (my $res=$request->fetchrow_hashref()){
+    $mtyp_ref->{$res->{'d63mtyp'}} = {
+         vmanz     => $res->{'d63anzvm'},
+         sotext    => $res->{'d63sotext'},
+         helptext  => $res->{'d63helptest'},
+    };
+  }
   
   $sql_statement = qq{
-  select d01aort,d01gsi,d01ort,d01entl,d01mtyp,d01ex,d01status,d01skond,d01rv,d01abtlg,d01zweig,d01bnr 
+  select d01aort,d01gsi,d01ort,d01entl,d01mtyp,d01ex,d01status,d01skond,d01vmanz,d01rv,d01abtlg,d01zweig,d01bnr 
 
-  from $database.sisis.d01buch 
+  from $database.sisis.d01buch
 
-  where d01katkey = ?
+  where d01katkey = ? 
   };
 
   $request=$dbh->prepare($sql_statement);
@@ -108,31 +134,56 @@ sub get_mediastatus {
     my $entl       = $res->{'d01entl'};
     my $status     = $res->{'d01status'};
     my $skond      = $res->{'d01skond'};
-    my $standort   = $res->{'d01abtlg'};
+    my $abteilung  = $res->{'d01abtlg'};
     my $mtyp       = $res->{'d01mtyp'};
     my $bnr        = $res->{'d01bnr'};
     my $zweignr    = $res->{'d01zweig'};
+    my $vmanz      = $res->{'d01vmanz'};
     my $ausgabeort = $res->{'d01aort'};
     my $zweigst    = "";
 
-    my $statusstring="";
+    my $statusstring   = "";
+    my $standortstring = "";
+    my $vormerkbar     = 0;
+    my $opactext       = (exists $mtyp_ref->{$mtyp}{sotext})?$mtyp_ref->{$mtyp}{sotext}:'';
 
-    if ($abteilung{"$zweignr"}{"$standort"}){
-      $standort=$abteilung{"$zweignr"}{"$standort"};
+    if ($vmanz < $mtyp_ref->{$mtyp}{vmanz}){
+       $vormerkbar   = 1;
+    }
+
+    if ($abteilung{"$zweignr"}{"$abteilung"}){
+      $standortstring=$abteilung{"$zweignr"}{"$abteilung"};
     }
     
     if ($zweig{"$zweignr"}{Bezeichnung}){
-      $standort=$zweig{"$zweignr"}{Bezeichnung}." / $standort";
+      $standortstring=$zweig{"$zweignr"}{Bezeichnung}." / $standortstring";
     }
-    
-    if ($status eq "0"){
-      $statusstring="bestellbar";
+
+    if    ($entl_map_ref->{$entl} == 0){
+      $statusstring="nicht entleihbar";
     }
-    elsif ($status eq "2"){
-      $statusstring="entliehen"; # Sonderwunsch. Eigentlich: bestellt
+    elsif ($entl_map_ref->{$entl} == 1){
+    	if ($status eq "0"){
+            $statusstring="bestellbar";
+        }
+        elsif ($status eq "2"){
+            $statusstring="entliehen"; # Sonderwunsch. Eigentlich: bestellt
+        }
+        elsif ($status eq "4"){
+            $statusstring="entliehen";
+        }
+        else {
+            $statusstring="unbekannt";
+        }
     }
-    elsif ($status eq "4"){
-      $statusstring="entliehen";
+    elsif ($entl_map_ref->{$entl} == 2){
+      $statusstring="nur im Lesesaal";
+    }
+    elsif ($entl_map_ref->{$entl} == 3){
+      $statusstring="nur im bes. Lesesaal";
+    }
+    elsif ($entl_map_ref->{$entl} == 4){
+      $statusstring="nur Wochenende";
     }
     else {
       $statusstring="unbekannt";
@@ -147,65 +198,24 @@ sub get_mediastatus {
       $statusstring="vermi&szlig;t";
     }
 
-    if ($zweignr == 0){    
-      if ($signatur=~/^19A/ || $signatur=~/^2\dA/ || $signatur=~/3[0-3]A/){
-        if ($statusstring eq "bestellbar"){
-	  $statusstring="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/sab/index_ger.html\" target=\"_blank\">SAB</a> / ausleihbar";
-        }
-        else {
-	  $statusstring="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/sab/index_ger.html\" target=\"_blank\">SAB</a> / vormerkbar";
-        }
-      }
-    
-      if ($standort=~/Lehrbuchsammlung/){
-        if ($statusstring eq "bestellbar"){
-          $statusstring="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/lbs/index_ger.html\" target=\"_blank\">LBS</a> / ausleihbar";
-        }
-        else {
-          $statusstring="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/lbs/index_ger.html\" target=\"_blank\">LBS</a> / entliehen";
-        }
-      }
-      elsif ($standort=~/Lesesaal/){
-        $statusstring="<a href=\"http://www.ub.uni-koeln.de/service/ausleihabc/ls/index_ger.html\" target=\"_blank\">LS</a> / Pr&auml;senzbestand";
-      }
-    
-    }
-    elsif ($zweignr == 4){    
-      if ($standort=~/Lehrbuchsammlung/){
-        if ($statusstring eq "bestellbar"){
-           $statusstring="<a href=\"http://www.ub.uni-koeln.de/bibliothek/kontakt/zeiten/index_ger.html#e1693\" target=\"_blank\">LBS</a> / ausleihbar";
-        }
-        else {
-           $statusstring="<a href=\"http://www.ub.uni-koeln.de/bibliothek/kontakt/zeiten/index_ger.html#e1693\" target=\"_blank\">LBS</a> / entliehen";
-        }
-      }
-      elsif ($standort=~/Lesesaal/){
-        $statusstring="LS / Pr&auml;senzbestand";
-      }
-    }
-
-    # Spezielle Enleiher
-
-    # EDZ
-    if ($bnr eq "D00000572#H"){
-        $statusstring="<a href=\"http://www.ub.uni-koeln.de/edz/content/index_ger.html\" target=\"_blank\">EDZ</a> / einsehbar";
-        $standort="EDZ";
-    }
-
     $rueckgabe=~s/12:00AM//;
     
-    $standort="-" unless ($standort);
+    $standortstring="-" unless ($standortstring);
     
     my $singleex_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
-		SOAP::Data->name(Mediennr    => $mediennr)->type('string'),
-		SOAP::Data->name(Zweigstelle => $zweignr)->type('string'),
-		SOAP::Data->name(Signatur    => $signatur)->type('string'),
-		SOAP::Data->name(Exemplar    => $exemplar)->type('string'),
-		SOAP::Data->name(Standort    => $standort)->type('string'),
-		SOAP::Data->name(Status      => $statusstring)->type('string'),
-		SOAP::Data->name(Statuscode  => $status)->type('string'),
-		SOAP::Data->name(Rueckgabe   => $rueckgabe)->type('string'),
-		SOAP::Data->name(Ausgabeort  => $ausgabeort)->type('string'),
+		SOAP::Data->name(Mediennr       => $mediennr)->type('string'),
+		SOAP::Data->name(Zweigstelle    => $zweignr)->type('string'),
+		SOAP::Data->name(Signatur       => $signatur)->type('string'),
+		SOAP::Data->name(Exemplar       => $exemplar)->type('string'),
+		SOAP::Data->name(Abteilungscode => $abteilung)->type('string'),
+		SOAP::Data->name(Standort       => $standortstring)->type('string'),
+		SOAP::Data->name(Status         => $statusstring)->type('string'),
+		SOAP::Data->name(Statuscode     => $status)->type('string'),
+		SOAP::Data->name(Opactext       => $opactext)->type('string'),
+		SOAP::Data->name(Entleihbarkeit => $entl_map_ref->{$entl})->type('int'),
+		SOAP::Data->name(Vormerkbarkeit => $vormerkbar)->type('int'),
+		SOAP::Data->name(Rueckgabe      => $rueckgabe)->type('string'),
+		SOAP::Data->name(Ausgabeort     => $ausgabeort)->type('string'),
 	));
     
     push @medialist, $singleex_ref;
