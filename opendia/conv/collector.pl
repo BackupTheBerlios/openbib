@@ -62,13 +62,21 @@ my $request=$metadbh->do("truncate table meta");
 
 my $rule=File::Find::Rule->new;
 
-my @metafiles = File::Find::Rule->relative->file()->name( '*.dsc' )->in( $collectionbasedir );
+my @files = File::Find::Rule->relative->file()->in( $collectionbasedir );
 
-
-
-foreach my $metafile (@metafiles){
+foreach my $file (@files){
   print ".";
-  my ($metapath,$metaelement,$category)=$metafile=~m/^(.*)\/(.+?)_(.+?)\.dsc$/;
+
+  my ($metapath,$metaelement,$category,$ext)=("","","","");
+
+  if ($file=~/.*\.dsc$/){
+    # Metadaten
+    ($metapath,$metaelement,$category)=$file=~m/^(.*)\/(.+?)_(.+?)\.dsc$/;
+  }
+  elsif ($file=~/\.tif$/ || $file =~/\.jpg$/ || $file =~/\.png$/) {
+    # Originaldaten
+    ($metapath,$metaelement)=$file=~m/^(.*)\/(.+?\....)$/;
+  }
 
   my @path=split("\/",$metapath);
 
@@ -119,8 +127,12 @@ foreach my $metafile (@metafiles){
     $metascheme="emab";
   }
   
+#  print "PATH: $metapath - CAT: $category - C: $collection I: $item S0: $sub S1: $sub1 S2: $sub2 EL: $metaelement - ALL: $file SCH: $metascheme TY: $type\n";
+
+#  next;
+
   my $content="";
-  open (META,"$collectionbasedir/$metafile");
+  open (META,"$collectionbasedir/$file");
   while (<META>){
     $content=$content.$_;
   }
