@@ -2,7 +2,7 @@
 #
 #  OpenDIA::Editor
 #
-#  Dieses File ist (C) 2005 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2001-2004 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der

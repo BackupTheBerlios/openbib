@@ -35,6 +35,7 @@ no warnings 'redefine';
 
 use Apache::Constants qw(:common);
 use Apache::Request ();
+use Encode;
 use DBI;
 use Log::Log4perl qw(get_logger :levels);
 use SOAP::Lite;
@@ -288,6 +289,13 @@ sub handler {
                 remotehost    => $remotehost,
                 remoteview    => $remoteview,
                 sessionID     => $sessionID,
+
+                iso2utf8      => sub {
+                    my $string=shift;
+                    $string=Encode::encode_utf8($string);
+                    return $string;
+                },
+
                 config        => \%config,
             };
       
@@ -323,6 +331,13 @@ sub handler {
                 remotehost => $remotehost,
                 remoteview => $remoteview,
                 sessionID  => $sessionID,
+
+                iso2utf8      => sub {
+                    my $string=shift;
+                    $string=Encode::encode_utf8($string);
+                    return $string;
+                },
+
                 config     => \%config,
             };
       

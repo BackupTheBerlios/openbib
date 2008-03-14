@@ -1,0 +1,19 @@
+<!-- Begin DC Metadata -->
+<table cellpadding="2">
+<tr><td>Titel</td><td><input type="text" name="DC.Title" value="[% metainfo.DC_Title %]" size="30" maxlength="200"></td></tr>
+<tr><td>Autor</td><td><input type="text" name="DC.Creator" value="[% metainfo.DC_Creator %]" size="30" maxlength="200"></td></tr>
+<tr><td>Schlagw&ouml;rter bzw. Klassifikation</td><td><input type="text" name="DC.Subject" value="[% metainfo.DC_Subject %]" size="30" maxlength="200"></td></tr>
+<tr><td>Inhaltliche Beschreibung</td><td><input type="text" name="DC.Description" value="[% metainfo.DC_Description %]" size="30" maxlength="200"></td></tr>
+<tr><td>Verleger / Herausgeber</td><td><input type="text" name="DC.Publisher" value="[% metainfo.DC_Publisher %]" size="30" maxlength="200"></td></tr>
+<tr><td>Sonstige Beteiligte</td><td><input type="text" name="DC.Contributors" value="[% metainfo.DC_Contributors %]" size="30" maxlength="200"></td></tr>
+<tr><td>Datum</td><td><input type="text" name="DC.Date" value="[% metainfo.DC_Date %]" size="30" maxlength="200"></td></tr>
+<tr><td>Ressourcenart</td><td><input type="text" name="DC.Type" value="[% metainfo.DC_Type %]" size="30" maxlength="200"></td></tr>
+<tr><td>Format</td><td><input type="text" name="DC.Format" value="[% metainfo.DC_Format %]" size="30" maxlength="200"></td></tr>
+<tr><td>Ressourcenidentifikation</td><td><input type="text" name="DC.Identifier value="[% metainfo.DC_Identifier %]" size="30" maxlength="200"></td></tr>
+<tr><td>Quelle</td><td><input type="text" name="DC.Source" value="[% metainfo.DC_Source %]" size="30" maxlength="200"></td></tr>
+<tr><td>Sprache</td><td><input type="text" name="DC.Language" value="[% metainfo.DC_Language %]" size="30" maxlength="200"></td></tr>
+<tr><td>Verh&auml;ltnis zu anderen Ressourcen</td><td><input type="text" name="DC.Relation" value="[% metainfo.DC_Relation %]" size="30" maxlength="200"></td></tr>
+<tr><td>Abdeckungsspektrum</td><td><input type="text" name="DC.Coverage" value="[% metainfo.DC_Coverage %]" size="30" maxlength="200"></td></tr>
+<tr><td>Rechtliche Bedingungen</td><td><input type="text" name="DC.Rights" value="[% metainfo.DC_Rights %]" size="30" maxlength="200"></td></tr>
+</table>
+<!-- End DC Metadata -->
