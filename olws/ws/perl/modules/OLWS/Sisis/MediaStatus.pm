@@ -31,6 +31,7 @@ use strict;
 use warnings;
 
 use Log::Log4perl qw(get_logger :levels);
+use Encode qw/encode decode/;
 
 use DBI;
 
@@ -177,10 +178,10 @@ sub get_mediastatus {
         }
     }
     elsif ($entl_map_ref->{$entl} == 2){
-      $statusstring="nur im Lesesaal";
+      $statusstring="nur in Lesesaal bestellbar";
     }
     elsif ($entl_map_ref->{$entl} == 3){
-      $statusstring="nur im bes. Lesesaal";
+      $statusstring="nur in bes. Lesesaal bestellbar";
     }
     elsif ($entl_map_ref->{$entl} == 4){
       $statusstring="nur Wochenende";
@@ -201,26 +202,102 @@ sub get_mediastatus {
     $rueckgabe=~s/12:00AM//;
     
     $standortstring="-" unless ($standortstring);
+
+    my $d39sql_statement = qq{
+       select d39fusstext
+
+       from $database.sisis.d39fussnoten
+
+       where d39gsi = ?
+         AND d39ex = ?
+         AND d39fussart = 1
+
+       order by d39fussnr
+  };
+
+    my $request2=$dbh->prepare($d39sql_statement);
+    $request2->execute($mediennr,$exemplar) or $logger->error_die($DBI::errstr);;
+    
+    $logger->info("Fussnoten fuer Mediennr:$mediennr: Exemplar:$exemplar:");
+    my $fussnote = "";
+	
+    while (my $res2=$request2->fetchrow_hashref){
+        $fussnote.=$res2->{d39fusstext};
+    }
+    
+    $request2->finish();
+
     
     my $singleex_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
-		SOAP::Data->name(Mediennr       => $mediennr)->type('string'),
-		SOAP::Data->name(Zweigstelle    => $zweignr)->type('string'),
-		SOAP::Data->name(Signatur       => $signatur)->type('string'),
-		SOAP::Data->name(Exemplar       => $exemplar)->type('string'),
-		SOAP::Data->name(Abteilungscode => $abteilung)->type('string'),
-		SOAP::Data->name(Standort       => $standortstring)->type('string'),
-		SOAP::Data->name(Status         => $statusstring)->type('string'),
-		SOAP::Data->name(Statuscode     => $status)->type('string'),
-		SOAP::Data->name(Opactext       => $opactext)->type('string'),
+		SOAP::Data->name(Mediennr       => encode("utf-8",decode("iso-8859-1",$mediennr)))->type('string'),
+		SOAP::Data->name(Zweigstelle    => encode("utf-8",decode("iso-8859-1",$zweignr)))->type('string'),
+		SOAP::Data->name(Signatur       => encode("utf-8",decode("iso-8859-1",$signatur)))->type('string'),
+		SOAP::Data->name(Exemplar       => encode("utf-8",decode("iso-8859-1",$exemplar)))->type('string'),
+		SOAP::Data->name(Abteilungscode => encode("utf-8",decode("iso-8859-1",$abteilung)))->type('string'),
+		SOAP::Data->name(Standort       => encode("utf-8",decode("iso-8859-1",$standortstring)))->type('string'),
+		SOAP::Data->name(Status         => encode("utf-8",decode("iso-8859-1",$statusstring)))->type('string'),
+		SOAP::Data->name(Statuscode     => encode("utf-8",decode("iso-8859-1",$status)))->type('string'),
+		SOAP::Data->name(Opactext       => encode("utf-8",decode("iso-8859-1",$opactext)))->type('string'),
 		SOAP::Data->name(Entleihbarkeit => $entl_map_ref->{$entl})->type('int'),
 		SOAP::Data->name(Vormerkbarkeit => $vormerkbar)->type('int'),
-		SOAP::Data->name(Rueckgabe      => $rueckgabe)->type('string'),
-		SOAP::Data->name(Ausgabeort     => $ausgabeort)->type('string'),
+		SOAP::Data->name(Rueckgabe      => encode("utf-8",decode("iso-8859-1",$rueckgabe)))->type('string'),
+		SOAP::Data->name(Ausgabeort     => encode("utf-8",decode("iso-8859-1",$ausgabeort)))->type('string'),
 	));
     
     push @medialist, $singleex_ref;
   }
 
+
+  # Wenn noch keine Buchdaten, dann vielleicht nur bestellt?
+  if (!@medialist){
+#    if (0 == 1){
+	# Bestellungen beim Lieferanten/Neuanschaffungen
+	$logger->info("Keine Buchdaten. Suche Bestelldaten");
+
+	$sql_statement = qq{
+     select buch.statusbuch as buchstatus ,best.bsdatum as bestelldatum 
+
+     from $database.sisis.bestellung as best, $database.sisis.acq_band as band, $database.sisis.acq_buch as buch
+
+     where band.katkey=? 
+       and band.bnr=best.bnr 
+       and best.bnr=buch.bnr 
+       and best.verarbcode=1 
+       and buch.statusverarb=1 
+       and buch.statusbest=1
+  };
+
+	$request=$dbh->prepare($sql_statement);
+	$request->execute($katkey) or $logger->error_die($DBI::errstr);;
+	
+	while (my $res=$request->fetchrow_hashref()){
+	    my $bestelldatum   = $res->{'bestelldatum'};
+	    my $statuscode     = $res->{'buchstatus'};
+
+	    my $singleex_ref = SOAP::Data->name(AquisitionItem  => \SOAP::Data->value(
+						    SOAP::Data->name(Mediennr       => '')->type('string'),
+						    SOAP::Data->name(Zweigstelle    => '0')->type('string'),
+						    SOAP::Data->name(Signatur       => '')->type('string'),
+						    SOAP::Data->name(Exemplar       => '')->type('string'),
+						    SOAP::Data->name(Abteilungscode => '')->type('string'),
+                                                    SOAP::Data->name(Standortcode   => '')->type('string'),
+						    SOAP::Data->name(Standort       => '')->type('string'),
+						    SOAP::Data->name(Status         => '')->type('string'),
+						    SOAP::Data->name(Statuscode     => '')->type('string'),
+						    SOAP::Data->name(AquisitionStatuscode => "$statuscode")->type('string'),
+						    SOAP::Data->name(Opactext       => '')->type('string'),
+						    SOAP::Data->name(Fussnote       => '')->type('string'),
+						    SOAP::Data->name(Entleihbarkeit => 0)->type('int'),
+						    SOAP::Data->name(Vormerkbarkeit => 0)->type('int'),
+						    SOAP::Data->name(Rueckgabe      => '')->type('string'),
+						    SOAP::Data->name(Ausgabeort     => '')->type('string'),
+						));
+	    
+	    push @medialist, $singleex_ref;
+	    $logger->info("Erwerbungsdaten gefunden fuer Katkey: $katkey");
+	}
+    }
+  
   return SOAP::Data->name(MediaList  => SOAP::Data->value(\@medialist));
 }
 

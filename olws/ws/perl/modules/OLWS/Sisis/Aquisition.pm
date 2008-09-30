@@ -31,6 +31,7 @@ use strict;
 use warnings;
 
 use Log::Log4perl qw(get_logger :levels);
+use Encode qw/encode decode/;
 
 use DBI;
 
@@ -84,7 +85,7 @@ sub get_recent_titids_by_acqgrp {
   my @medialist=();
   while (my $res=$request->fetchrow_hashref()){
     push @medialist, SOAP::Data->name(MediaItem  => \SOAP::Data->value(
-		SOAP::Data->name(Katkey          => $res->{katkey})->type('string')));
+		SOAP::Data->name(Katkey          => encode("utf-8",decode("iso-8859-1",$res->{katkey})))->type('string')));
   }
 
   $request->finish;

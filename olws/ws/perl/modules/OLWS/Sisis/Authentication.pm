@@ -32,8 +32,9 @@ use warnings;
 
 use Log::Log4perl qw(get_logger :levels);
 use Data::Dumper;
-
+use Encode qw/encode decode/;
 use DBI;
+use YAML;
 
 use OLWS::Common::Utils;
 use OLWS::Sisis::Config;
@@ -80,7 +81,10 @@ sub authenticate_user {
   my @resarr=$request->fetchrow_arrayref();
   my $count=$resarr[0][0];
   
+      $logger->info("Count:$count");
+
   if ($count != 1){
+      $logger->info("Wrong Count:$count");
     $request->finish;
     $dbh->disconnect();
     return undef;
@@ -102,12 +106,13 @@ sub authenticate_user {
   my $res=$request->fetchrow_hashref();
   
   # Personendaten
-  my $vorname      = $res->{'d02vname'};
-  my $nachname     = $res->{'d02name'};
-  my $geschlecht   = $res->{'d02sex'};
+  my $vorname      = encode("utf-8",decode("iso-8859-1",$res->{'d02vname'}));
+  my $nachname     = encode("utf-8",decode("iso-8859-1",$res->{'d02name'}));
+  my $geschlecht   = encode("utf-8",decode("iso-8859-1",$res->{'d02sex'}));
   my $geburtsdatum = OLWS::Common::Utils::conv_date($res->{'d02gedatum'});
-  my $ort          = $res->{'d02o1'};
-  my $strasse      = $res->{'d02s1'};
+  my $ort          = encode("utf-8",decode("iso-8859-1",$res->{'d02o1'}));
+#  my $strasse      = decode("iso-8859-1",$res->{'d02s1'});
+  my $strasse      = encode("utf-8",decode("iso-8859-1",$res->{'d02s1'}));
   my $plz          = $res->{'d02p1'};
   
   # Gebuehrendaten
@@ -140,7 +145,7 @@ sub authenticate_user {
   
   my @emailadr=();
   while (my $res=$request->fetchrow_hashref()){
-    my $singleemail=$res->{'d02ozeile'};
+    my $singleemail=encode("utf-8",decode("iso-8859-1",$res->{'d02ozeile'}));
     push @emailadr, $singleemail;
   }	
   
@@ -168,7 +173,7 @@ sub authenticate_user {
     $request->execute($sperre) or $logger->error_die($DBI::errstr);
     
     while (my $res=$request->fetchrow_hashref()){
-      my $sperrgrund=$res->{'d65text'};
+      my $sperrgrund=encode("utf-8",decode("iso-8859-1",$res->{'d65text'}));
       $sperre=$sperrgrund;
     }	
     $request->finish;
@@ -215,7 +220,8 @@ sub authenticate_user {
                 SOAP::Data->name(Sperrdatum   => $sperrdatum)->type('string'),
                 SOAP::Data->name(Email        => $email)->type('string')
   ));
-  
+
+  $logger->info(Dumper($userinfo_ref));
   $request->finish;
   $dbh->disconnect();
 

@@ -31,6 +31,7 @@ use strict;
 use warnings;
 
 use Log::Log4perl qw(get_logger :levels);
+use Encode qw/encode decode/;
 
 use DBI;
 
@@ -135,14 +136,14 @@ sub get_orders {
     if ($mtyp eq "99"){
       $bestelldatum=$bestelldatumpfl;
     }
-    
-    my $signatur        = $res->{'d01ort'};
+
+    my $signatur        = encode("utf-8",decode("iso-8859-1",$res->{'d01ort'}));
     
     if ($res->{'d01ex'}){
-      $signatur=$signatur.$res->{'d01ex'};
+      $signatur=$signatur.encode("utf-8",decode("iso-8859-1",$res->{'d01ex'}));
     }
     
-    my $mediennummer    = $res->{'d01gsi'};
+    my $mediennummer    = encode("utf-8",decode("iso-8859-1",$res->{'d01gsi'}));
 
     my $title_ref = get_short_title({
 	katkey   => $katkey,
@@ -183,6 +184,14 @@ sub get_reservations {
   # Log4perl logger erzeugen
 
   my $logger = get_logger();
+
+#   my $sql_statement = qq{
+#   select * 
+
+#   from $database.sisis.d04vorm 
+
+#   where d04bnr = ?
+#   };
 
   my $sql_statement = qq{
   select d01ort, d04katkey, d04gsi, d04vmdatum, d04aufrecht, d04zweig 
@@ -235,6 +244,7 @@ sub get_reservations {
 
       if ($bnr eq $username){
         $stelle=$counter;
+        last;
       }
 
       $counter++;
@@ -242,9 +252,9 @@ sub get_reservations {
 
     my $vormerkdatum  = OLWS::Common::Utils::conv_date($res->{'d04vmdatum'});
     my $aufrechtdatum = OLWS::Common::Utils::conv_date($res->{'d04aufrecht'});
-    my $mediennummer  = $res->{'d04gsi'};
-    my $signatur      = $res->{'d01ort'};
-    my $zweigstelle   = $res->{'d04zweig'};
+    my $mediennummer  = encode("utf-8",decode("iso-8859-1",$res->{'d04gsi'}));
+    my $signatur      = encode("utf-8",decode("iso-8859-1",$res->{'d01ort'}));
+    my $zweigstelle   = encode("utf-8",decode("iso-8859-1",$res->{'d04zweig'}));
     
     my $singlereservation_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
 		SOAP::Data->name(Katkey          => $katkey)->type('string'),
@@ -310,8 +320,8 @@ sub get_reminders {
     if ($mtyp == 99){
       $leihfristende="-";
     }
-    
-    my $mediennummer    = $res->{'d03gsi'};
+
+    my $mediennummer    = encode("utf-8",decode("iso-8859-1",$res->{'d03gsi'}));
 
     my $title_ref = get_short_title({
 	katkey   => $katkey,
@@ -377,13 +387,13 @@ sub get_borrows {
     my $mtyp           = $res->{'d01mtyp'};    
     my $ausleihdatum   = OLWS::Common::Utils::conv_date($res->{'d01av'});
     my $rueckgabedatum = OLWS::Common::Utils::conv_date($res->{'d01rv'});    
-    my $signatur       = $res->{'d01ort'};
+    my $signatur       = encode("utf-8",decode("iso-8859-1",$res->{'d01ort'}));
     
     if ($res->{'d01ex'}){
-      $signatur=$signatur.$res->{'d01ex'};
+      $signatur=$signatur.encode("utf-8",decode("iso-8859-1",$res->{'d01ex'}));
     }
-    
-    my $mediennummer   = $res->{'d01gsi'};
+
+    my $mediennummer   = encode("utf-8",decode("iso-8859-1",$res->{'d01gsi'}));
 
     my $title_ref = get_short_title({
 	katkey   => $katkey,
@@ -419,6 +429,7 @@ sub get_idn_of_borrows {
   my ($self, $args_ref) = @_;
 
   my $username = $args_ref->{username};
+  my $dept     = $args_ref->{dept};
   my $password = $args_ref->{password};
   my $database = $args_ref->{database};
 
@@ -426,17 +437,32 @@ sub get_idn_of_borrows {
 
   my $logger = get_logger();
 
-  my $sql_statement = qq{
-  select d01katkey 
+  my $sql_statement = "";
+  my $sql_arg       = "";
+  if ($username){
+    $sql_statement = qq{
+      select d01katkey 
 
-  from $database.sisis.d01buch 
+      from $database.sisis.d01buch 
 
-  where d01bnr = ? 
-  };
+      where d01bnr = ? 
+    };
+    $sql_arg = $username;
+  }
+  elsif ($dept){
+    $sql_statement = qq{
+      select d01katkey 
+
+      from $database.sisis.d01buch 
+
+      where d01abtlg = ? 
+    };
+    $sql_arg = $dept;
+  }
   
   my $request=$self->{dbh}->prepare($sql_statement);
-  $request->execute($username) or $logger->error_die($DBI::errstr);
-  
+  $request->execute($sql_arg) or $logger->error_die($DBI::errstr);
+
   my @borrowlist=();
   
   while (my $res=$request->fetchrow_hashref()){

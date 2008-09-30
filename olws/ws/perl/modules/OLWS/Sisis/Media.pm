@@ -31,6 +31,7 @@ use strict;
 use warnings;
 
 use Log::Log4perl qw(get_logger :levels);
+use Encode qw/encode decode/;
 
 use DBI;
 
