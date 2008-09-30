@@ -51,7 +51,7 @@ sub handler {
 
    my $logger = get_logger();
 
-   $logger->info("Request from: ".$r->get_remote_host);
+#   $logger->info("Request from: ".$r->get_remote_host);
 
    $server->handler(@_);
 }
