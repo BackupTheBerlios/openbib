@@ -265,6 +265,7 @@ sub get_mediastatus {
        and best.verarbcode=1 
        and buch.statusverarb=1 
        and buch.statusbest=1
+       and buch.statusbuch != 3
   };
 
 	$request=$dbh->prepare($sql_statement);
