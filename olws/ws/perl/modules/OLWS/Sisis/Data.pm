@@ -4,7 +4,7 @@
 #
 #  OLWS::Sisis::Data
 #
-#  Dieses File ist (C) 2005 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2005-2009 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der
@@ -65,9 +65,9 @@ sub get_titdupref_by_katkey {
   my $singletitle=undef;
   
   while (my $res=$request->fetchrow_hashref()){
-    my $verfasser=encode("utf-8",decode("iso-8859-1",$res->{autor_avs}));
-    my $titel=encode("utf-8",decode("iso-8859-1",$res->{titel_avs}));
-    my $ejahr=encode("utf-8",decode("iso-8859-1",$res->{erschjahr}));
+    my $verfasser = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{autor_avs})):decode("iso-8859-1",$res->{autor_avs});
+    my $titel     = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{titel_avs})):decode("iso-8859-1",$res->{titel_avs});
+    my $ejahr     = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{erschjahr})):decode("iso-8859-1",$res->{erschjahr});
     
     $singletitle={
 		  '0100.001'      => $verfasser,
@@ -92,9 +92,9 @@ sub get_titzfl_by_katkey {
   my $singletitle=undef;
   
   while (my $res=$request->fetchrow_hashref()){
-    my $verfasser=encode("utf-8",decode("iso-8859-1",$res->{d10verfasser}));
-    my $titel=encode("utf-8",decode("iso-8859-1",$res->{d10titel}));
-    my $ejahr=encode("utf-8",decode("iso-8859-1",$res->{d10jahr}));
+    my $verfasser = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{d10verfasser})):decode("iso-8859-1",$res->{d10verfasser});
+    my $titel     = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{d10titel})):decode("iso-8859-1",$res->{d10titel});
+    my $ejahr     = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{d10jahr})):decode("iso-8859-1",$res->{d10jahr});
     
     $singletitle={
 		  '0100.001'      => $verfasser,
@@ -156,7 +156,7 @@ sub get_titref_by_katkey {
 	  $inh=get_normdata_ans($dbh,$sikfstabref,$database,$verwkey,$fnr,$inh);
 	}
 	my $KAT = sprintf "%04d", $kateg;
-	$titel{$KAT} = encode("utf-8",decode("iso-8859-1",$inh));
+	$titel{$KAT} = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$inh)):decode("iso-8859-1",$inh);
 	$i = $i + 4 + $len;
       }
       else {
@@ -174,7 +174,7 @@ sub get_titref_by_katkey {
 	      $inh=get_normdata_ans($dbh,$sikfstabref,$database,$verwkey,$fnr,$inh);
 	    }
 	    my $uKAT = sprintf "%04d.%03d", $kateg, $ukat;
-	    $titel{$uKAT} = encode("utf-8",decode("iso-8859-1",$inh));
+	    $titel{$uKAT} = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$inh)):decode("iso-8859-1",$inh);
 	  }
 	  $ukat++;
 	  $k = $k + 2 + $ulen;

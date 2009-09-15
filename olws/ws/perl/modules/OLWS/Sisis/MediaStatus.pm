@@ -4,7 +4,7 @@
 #
 #  OLWS::Sisis::MediaStatus
 #
-#  Dieses File ist (C) 2005-2007 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2005-2009 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der
@@ -227,21 +227,33 @@ sub get_mediastatus {
     
     $request2->finish();
 
-    
+    $mediennr       = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$mediennr)):decode("iso-8859-1",$mediennr);
+    $zweignr        = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$zweignr)):decode("iso-8859-1",$zweignr);
+    $signatur       = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$signatur)):decode("iso-8859-1",$signatur);
+    $exemplar       = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$exemplar)):decode("iso-8859-1",$exemplar);
+    $abteilung      = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$abteilung)):decode("iso-8859-1",$abteilung);
+    $standortstring = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$standortstring)):decode("iso-8859-1",$standortstring);
+    $statusstring   = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$statusstring)):decode("iso-8859-1",$statusstring);
+    $status         = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$status)):decode("iso-8859-1",$status);
+    $opactext       = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$opactext)):decode("iso-8859-1",$opactext);
+    $rueckgabe      = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$rueckgabe)):decode("iso-8859-1",$rueckgabe);
+    $ausgabeort     = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$ausgabeort)):decode("iso-8859-1",$ausgabeort);
+    $fussnote       = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$fussnote)):decode("iso-8859-1",$fussnote);
+
     my $singleex_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
-		SOAP::Data->name(Mediennr       => encode("utf-8",decode("iso-8859-1",$mediennr)))->type('string'),
-		SOAP::Data->name(Zweigstelle    => encode("utf-8",decode("iso-8859-1",$zweignr)))->type('string'),
-		SOAP::Data->name(Signatur       => encode("utf-8",decode("iso-8859-1",$signatur)))->type('string'),
-		SOAP::Data->name(Exemplar       => encode("utf-8",decode("iso-8859-1",$exemplar)))->type('string'),
-		SOAP::Data->name(Abteilungscode => encode("utf-8",decode("iso-8859-1",$abteilung)))->type('string'),
-		SOAP::Data->name(Standort       => encode("utf-8",decode("iso-8859-1",$standortstring)))->type('string'),
-		SOAP::Data->name(Status         => encode("utf-8",decode("iso-8859-1",$statusstring)))->type('string'),
-		SOAP::Data->name(Statuscode     => encode("utf-8",decode("iso-8859-1",$status)))->type('string'),
-		SOAP::Data->name(Opactext       => encode("utf-8",decode("iso-8859-1",$opactext)))->type('string'),
+		SOAP::Data->name(Mediennr       => $mediennr)->type('string'),
+		SOAP::Data->name(Zweigstelle    => $zweignr)->type('string'),
+		SOAP::Data->name(Signatur       => $signatur)->type('string'),
+		SOAP::Data->name(Exemplar       => $exemplar)->type('string'),
+		SOAP::Data->name(Abteilungscode => $abteilung)->type('string'),
+		SOAP::Data->name(Standort       => $standortstring)->type('string'),
+		SOAP::Data->name(Status         => $statusstring)->type('string'),
+		SOAP::Data->name(Statuscode     => $status)->type('string'),
+		SOAP::Data->name(Opactext       => $opactext)->type('string'),
 		SOAP::Data->name(Entleihbarkeit => $entl_map_ref->{$entl})->type('int'),
 		SOAP::Data->name(Vormerkbarkeit => $vormerkbar)->type('int'),
-		SOAP::Data->name(Rueckgabe      => encode("utf-8",decode("iso-8859-1",$rueckgabe)))->type('string'),
-		SOAP::Data->name(Ausgabeort     => encode("utf-8",decode("iso-8859-1",$ausgabeort)))->type('string'),
+		SOAP::Data->name(Rueckgabe      => $rueckgabe)->type('string'),
+		SOAP::Data->name(Ausgabeort     => $ausgabeort)->type('string'),
 	));
     
     push @medialist, $singleex_ref;

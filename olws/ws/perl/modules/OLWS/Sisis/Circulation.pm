@@ -4,7 +4,7 @@
 #
 #  OLWS::Sisis::Circulation
 #
-#  Dieses File ist (C) 2005-2007 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2005-2009 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der
@@ -137,13 +137,15 @@ sub get_orders {
       $bestelldatum=$bestelldatumpfl;
     }
 
-    my $signatur        = encode("utf-8",decode("iso-8859-1",$res->{'d01ort'}));
+    my $signatur        = $res->{'d01ort'};
     
     if ($res->{'d01ex'}){
-      $signatur=$signatur.encode("utf-8",decode("iso-8859-1",$res->{'d01ex'}));
+      $signatur=$signatur.$res->{'d01ex'};
     }
+
+    $signatur           = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$signatur)):decode("iso-8859-1",$signatur);
     
-    my $mediennummer    = encode("utf-8",decode("iso-8859-1",$res->{'d01gsi'}));
+    my $mediennummer    = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d01gsi'})):decode("iso-8859-1",$res->{'d01gsi'});
 
     my $title_ref = get_short_title({
 	katkey   => $katkey,
@@ -252,9 +254,9 @@ sub get_reservations {
 
     my $vormerkdatum  = OLWS::Common::Utils::conv_date($res->{'d04vmdatum'});
     my $aufrechtdatum = OLWS::Common::Utils::conv_date($res->{'d04aufrecht'});
-    my $mediennummer  = encode("utf-8",decode("iso-8859-1",$res->{'d04gsi'}));
-    my $signatur      = encode("utf-8",decode("iso-8859-1",$res->{'d01ort'}));
-    my $zweigstelle   = encode("utf-8",decode("iso-8859-1",$res->{'d04zweig'}));
+    my $mediennummer  = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d04gsi'})):decode("iso-8859-1",$res->{'d04gsi'});
+    my $signatur      = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d01ort'})):decode("iso-8859-1",$res->{'d01ort'});
+    my $zweigstelle   = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d04zweig'})):decode("iso-8859-1",$res->{'d04zweig'});
     
     my $singlereservation_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
 		SOAP::Data->name(Katkey          => $katkey)->type('string'),
@@ -321,7 +323,7 @@ sub get_reminders {
       $leihfristende="-";
     }
 
-    my $mediennummer    = encode("utf-8",decode("iso-8859-1",$res->{'d03gsi'}));
+    my $mediennummer    = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d03gsi'})):decode("iso-8859-1",$res->{'d03gsi'});
 
     my $title_ref = get_short_title({
 	katkey   => $katkey,
@@ -387,13 +389,16 @@ sub get_borrows {
     my $mtyp           = $res->{'d01mtyp'};    
     my $ausleihdatum   = OLWS::Common::Utils::conv_date($res->{'d01av'});
     my $rueckgabedatum = OLWS::Common::Utils::conv_date($res->{'d01rv'});    
-    my $signatur       = encode("utf-8",decode("iso-8859-1",$res->{'d01ort'}));
+
+    my $signatur       = $res->{'d01ort'};
     
     if ($res->{'d01ex'}){
-      $signatur=$signatur.encode("utf-8",decode("iso-8859-1",$res->{'d01ex'}));
+      $signatur=$signatur.$res->{'d01ex'};
     }
 
-    my $mediennummer   = encode("utf-8",decode("iso-8859-1",$res->{'d01gsi'}));
+    $signatur           = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$signatur)):decode("iso-8859-1",$signatur);
+
+    my $mediennummer   = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d01gsi'})):decode("iso-8859-1",$res->{'d01gsi'});
 
     my $title_ref = get_short_title({
 	katkey   => $katkey,

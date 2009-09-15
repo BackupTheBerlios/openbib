@@ -4,7 +4,7 @@
 #
 #  OLWS::Sisis::Aquisition
 #
-#  Dieses File ist (C) 2006 Oliver Flimm <flimm@openbib.org>
+#  Dieses File ist (C) 2006-2009 Oliver Flimm <flimm@openbib.org>
 #
 #  Dieses Programm ist freie Software. Sie koennen es unter
 #  den Bedingungen der GNU General Public License, wie von der
@@ -84,8 +84,10 @@ sub get_recent_titids_by_acqgrp {
   
   my @medialist=();
   while (my $res=$request->fetchrow_hashref()){
+    my $katkey = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{katkey})):decode("iso-8859-1",$res->{katkey});
+
     push @medialist, SOAP::Data->name(MediaItem  => \SOAP::Data->value(
-		SOAP::Data->name(Katkey          => encode("utf-8",decode("iso-8859-1",$res->{katkey})))->type('string')));
+		SOAP::Data->name(Katkey          => $katkey)->type('string')));
   }
 
   $request->finish;

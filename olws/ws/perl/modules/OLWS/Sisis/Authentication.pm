@@ -106,13 +106,13 @@ sub authenticate_user {
   my $res=$request->fetchrow_hashref();
   
   # Personendaten
-  my $vorname      = encode("utf-8",decode("iso-8859-1",$res->{'d02vname'}));
-  my $nachname     = encode("utf-8",decode("iso-8859-1",$res->{'d02name'}));
-  my $geschlecht   = encode("utf-8",decode("iso-8859-1",$res->{'d02sex'}));
+  my $vorname      = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d02vname'})):decode("iso-8859-1",$res->{'d02vname'});
+  my $nachname     = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d02name'})):decode("iso-8859-1",$res->{'d02name'});
+  my $geschlecht   = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d02sex'})):decode("iso-8859-1",$res->{'d02sex'});
   my $geburtsdatum = OLWS::Common::Utils::conv_date($res->{'d02gedatum'});
-  my $ort          = encode("utf-8",decode("iso-8859-1",$res->{'d02o1'}));
+  my $ort          = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d02o1'})):decode("iso-8859-1",$res->{'d02o1'});
 #  my $strasse      = decode("iso-8859-1",$res->{'d02s1'});
-  my $strasse      = encode("utf-8",decode("iso-8859-1",$res->{'d02s1'}));
+  my $strasse      = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d02s1'})):decode("iso-8859-1",$res->{'d02s1'});
   my $plz          = $res->{'d02p1'};
   
   # Gebuehrendaten
@@ -145,7 +145,7 @@ sub authenticate_user {
   
   my @emailadr=();
   while (my $res=$request->fetchrow_hashref()){
-    my $singleemail=encode("utf-8",decode("iso-8859-1",$res->{'d02ozeile'}));
+    my $singleemail=($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d02ozeile'})):decode("iso-8859-1",$res->{'d02ozeile'});
     push @emailadr, $singleemail;
   }	
   
@@ -173,7 +173,7 @@ sub authenticate_user {
     $request->execute($sperre) or $logger->error_die($DBI::errstr);
     
     while (my $res=$request->fetchrow_hashref()){
-      my $sperrgrund=encode("utf-8",decode("iso-8859-1",$res->{'d65text'}));
+      my $sperrgrund=($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$res->{'d65text'})):decode("iso-8859-1",$res->{'d65text'});
       $sperre=$sperrgrund;
     }	
     $request->finish;
