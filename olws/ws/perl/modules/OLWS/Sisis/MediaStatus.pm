@@ -36,6 +36,7 @@ use Encode qw/encode decode/;
 use DBI;
 
 use OLWS::Sisis::Config;
+use OLWS::Common::Utils;
 
 # Importieren der Konfigurationsdaten als Globale Variablen
 # in diesem Namespace
@@ -69,6 +70,7 @@ sub get_mediastatus {
   
   my $dbh=DBI->connect("DBI:$config{dbimodule}:dbname=$database;server=$config{dbserver};host=$config{dbhost};port=$config{dbport}", $config{dbuser}, $config{dbpasswd}) or $logger->error_die($DBI::errstr);
 
+  # Zweigstellen  
   my $sql_statement = qq{
   select * 
 
@@ -82,7 +84,8 @@ sub get_mediastatus {
   while (my $res=$request->fetchrow_hashref()){
     $zweig{$res->{'d50zweig'}}{Bezeichnung}=$res->{'d50bezeich'};
   }
-  
+
+  # Abteilungen/Standorte  
   $sql_statement = qq{
   select * 
 
@@ -97,6 +100,7 @@ sub get_mediastatus {
     $abteilung{$res->{'d60zweig'}}{$res->{'d60abt'}}=$res->{'d60bezeich'};
   }
 
+  # Medientypen
   $sql_statement = qq{
   select * 
 
@@ -115,8 +119,43 @@ sub get_mediastatus {
     };
   }
   
+  # Benutzergruppen
   $sql_statement = qq{
-  select d01aort,d01gsi,d01ort,d01entl,d01mtyp,d01ex,d01status,d01skond,d01vmanz,d01rv,d01abtlg,d01zweig,d01bnr 
+  select * 
+
+  from $database.sisis.d61bgr
+  };
+
+  $request=$dbh->prepare($sql_statement);
+  $request->execute() or $logger->error_die($DBI::errstr);
+  
+  my $bgr_ref = {};
+  while (my $res=$request->fetchrow_hashref()){
+    $bgr_ref->{$res->{'d61bgr'}} = {
+         name      => $res->{'d61gruppe'},
+    };
+  }
+
+  # Benutzergruppen bezogen auf Medientyp
+  $sql_statement = qq{
+  select * 
+
+  from $database.sisis.d62bgrm
+  };
+
+  $request=$dbh->prepare($sql_statement);
+  $request->execute() or $logger->error_die($DBI::errstr);
+  
+  my $bgrm_ref = {};
+  while (my $res=$request->fetchrow_hashref()){
+    $bgrm_ref->{$res->{'d62bgr'}}{$res->{'d62mtyp'}} = {
+         vormerksperre    => $res->{'d62vmsperr'},
+    };
+  }
+
+  # Buchdaten zu einem Katalogschluessel
+  $sql_statement = qq{
+  select d01aort,d01gsi,d01ort,d01entl,d01mtyp,d01ex,d01status,d01skond,d01vmanz,d01rv,d01abtlg,d01zweig,d01bnr,d01bg 
 
   from $database.sisis.d01buch
 
@@ -131,13 +170,14 @@ sub get_mediastatus {
     my $mediennr   = $res->{'d01gsi'};
     my $signatur   = $res->{'d01ort'};
     my $exemplar   = $res->{'d01ex'};
-    my $rueckgabe  = $res->{'d01rv'};
+    my $rueckgabe  = OLWS::Common::Utils::conv_date($res->{'d01rv'});
     my $entl       = $res->{'d01entl'};
     my $status     = $res->{'d01status'};
     my $skond      = $res->{'d01skond'};
     my $abteilung  = $res->{'d01abtlg'};
     my $mtyp       = $res->{'d01mtyp'};
     my $bnr        = $res->{'d01bnr'};
+    my $bgr        = $res->{'d01bg'};
     my $zweignr    = $res->{'d01zweig'};
     my $vmanz      = $res->{'d01vmanz'};
     my $ausgabeort = $res->{'d01aort'};
@@ -148,8 +188,39 @@ sub get_mediastatus {
     my $vormerkbar     = 0;
     my $opactext       = (exists $mtyp_ref->{$mtyp}{sotext})?$mtyp_ref->{$mtyp}{sotext}:'';
 
+    # Informationen ueber aktuellen Entleiher
+    my $sql_statement = qq{
+    select * 
+
+     from $database.sisis.d02ben
+
+     where d02bnr = ?
+    };
+
+    my $request2=$dbh->prepare($sql_statement);
+    $request2->execute($bnr) or $logger->error_die($DBI::errstr);
+
+    my $nutzer_vorname = "";  
+    my $nutzer_name    = "";  
+    my $nutzer_ort     = "";  
+    my $nutzer_strasse = "";  
+
+    while (my $res2=$request2->fetchrow_hashref()){
+      $nutzer_vorname = $res2->{'d02vname'};
+      $nutzer_name    = $res2->{'d02name'};
+      $nutzer_ort     = $res2->{'d02o1'};
+      $nutzer_strasse = $res2->{'d02s1'};
+    }
+
     if ($vmanz < $mtyp_ref->{$mtyp}{vmanz}){
        $vormerkbar   = 1;
+    }
+
+    # Vormerksperre bzgl. Gruppe des aktuell ausleihenden Benutzers 
+    # und des Medientyps
+    # Ist immer das letzte Wort
+    if ($bgrm_ref->{$bgr}{$mtyp}{vormerksperre}){
+       $vormerkbar   = 0;
     }
 
     if ($abteilung{"$zweignr"}{"$abteilung"}){
@@ -199,7 +270,7 @@ sub get_mediastatus {
       $statusstring="vermi&szlig;t";
     }
 
-    $rueckgabe=~s/12:00AM//;
+    $rueckgabe=~s/12:00AM//;    
     
     $standortstring="-" unless ($standortstring);
 
@@ -213,10 +284,10 @@ sub get_mediastatus {
          AND d39fussart = 1
 
        order by d39fussnr
-  };
+    };
 
-    my $request2=$dbh->prepare($d39sql_statement);
-    $request2->execute($mediennr,$exemplar) or $logger->error_die($DBI::errstr);;
+    $request2=$dbh->prepare($d39sql_statement);
+    $request2->execute($mediennr,$exemplar) or $logger->error_die($DBI::errstr);
     
     $logger->info("Fussnoten fuer Mediennr:$mediennr: Exemplar:$exemplar:");
     my $fussnote = "";
@@ -239,6 +310,13 @@ sub get_mediastatus {
     $rueckgabe      = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$rueckgabe)):decode("iso-8859-1",$rueckgabe);
     $ausgabeort     = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$ausgabeort)):decode("iso-8859-1",$ausgabeort);
     $fussnote       = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$fussnote)):decode("iso-8859-1",$fussnote);
+    $bnr            = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$bnr)):decode("iso-8859-1",$bnr);
+    $nutzer_vorname = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$nutzer_vorname)):decode("iso-8859-1",$nutzer_vorname);
+    $nutzer_name    = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$nutzer_name)):decode("iso-8859-1",$nutzer_name);
+    $nutzer_ort     = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$nutzer_ort)):decode("iso-8859-1",$nutzer_ort);
+    $nutzer_strasse = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$nutzer_strasse)):decode("iso-8859-1",$nutzer_strasse);
+    my $bgrname     = ($config{utf8_octets})?encode("utf-8",decode("iso-8859-1",$bgr_ref->{$bgr}{name})):decode("iso-8859-1",$bgr_ref->{$bgr}{name});
+
 
     my $singleex_ref = SOAP::Data->name(MediaItem  => \SOAP::Data->value(
 		SOAP::Data->name(Mediennr       => $mediennr)->type('string'),
@@ -252,8 +330,20 @@ sub get_mediastatus {
 		SOAP::Data->name(Opactext       => $opactext)->type('string'),
 		SOAP::Data->name(Entleihbarkeit => $entl_map_ref->{$entl})->type('int'),
 		SOAP::Data->name(Vormerkbarkeit => $vormerkbar)->type('int'),
+		SOAP::Data->name(Vormerkungen   => $vmanz)->type('int'),
 		SOAP::Data->name(Rueckgabe      => $rueckgabe)->type('string'),
 		SOAP::Data->name(Ausgabeort     => $ausgabeort)->type('string'),
+		SOAP::Data->name(Entleiher      => \SOAP::Data->value(
+                          SOAP::Data->name(Nr      => $bnr)->type('string'),
+                          SOAP::Data->name(Name    => $nutzer_name)->type('string'),
+                          SOAP::Data->name(Vorname => $nutzer_vorname)->type('string'),
+                          SOAP::Data->name(Strasse => $nutzer_strasse)->type('string'),
+                          SOAP::Data->name(Ort     => $nutzer_ort)->type('string'),
+                )),
+		SOAP::Data->name(Gruppe         => \SOAP::Data->value(
+                          SOAP::Data->name(Nr   => $bgr)->type('int'),
+                          SOAP::Data->name(Name => $bgrname)->type('string')
+                ))
 	));
     
     push @medialist, $singleex_ref;
