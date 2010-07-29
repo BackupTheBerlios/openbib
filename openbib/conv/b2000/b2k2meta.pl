@@ -94,7 +94,7 @@ while (my $line=<DAT>){
         push @buffer, $line;
     }
     else {
-        if (@buffer){
+        if (@buffer && ($titid || $mexid)){
             # Ende erreicht
 
             if ($type eq "M"){
